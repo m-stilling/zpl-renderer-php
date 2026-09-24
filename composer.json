@@ -21,9 +21,9 @@
 		"tecnickcom/tc-lib-barcode": "^2.16"
 	},
 	"require-dev": {
-		"pestphp/pest": "^4.0",
-		"phpstan/phpstan": "^2.0",
-		"robgridley/zebra": "^2.0",
+		"pestphp/pest": "^4.5",
+		"phpstan/phpstan": "^2.1.12",
+		"robgridley/zebra": "^2.0.2",
 		"andersonls/zpl": "^1.0"
 	},
 	"suggest": {
