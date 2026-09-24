@@ -10,7 +10,69 @@ composer require stilling/zpl
 
 Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension with FreeType support; PDF output does not.
 
-<p align="center"><img src="examples/shipping-label.png" width="406" alt="A shipping label rendered to PNG"></p>
+<table>
+<tr>
+<th>PNG</th>
+<th>ZPL</th>
+</tr>
+<tr>
+<td valign="top"><img src="examples/shipping-label.png" width="406" alt="A shipping label rendered to PNG"></td>
+<td valign="top">
+<pre>
+^XA
+^CI28
+^PW812
+^LL1218
+
+^FX Sender
+^CF0,28
+^FO50,50^FDNordvang Logistik ApS^FS
+^CF0,22
+^FO50,85^FDHavnegade 4^FS
+^FO50,112^FD9000 Aalborg, Danmark^FS
+
+^FX Divider
+^FO50,150^GB712,3,3^FS
+
+^FX Recipient
+^CF0,26
+^FO50,175^FDModtager^FS
+^CF0,44
+^FO50,210^FDBakkely Byg A/S^FS
+^CF0,36
+^FO50,265^FDMosevej 18^FS
+^FO50,310^FD7400 Herning^FS
+^FO50,355^FDDanmark^FS
+
+^FX Service box
+^FO50,420^GB712,120,3^FS
+^FO50,420^GB712,50,50^FS
+^FO65,432^FR^CF0,30^FDPakke - Erhverv^FS
+^CF0,28
+^FO65,485^FDVægt: 12,4 kg^FS
+^FO420,485^FDKolli: 1 / 2^FS
+
+^FX Sorting code
+^FO50,570^A0N,90,90^FDDK-74^FS
+^FO500,570^BQN,2,6^FDQA,https://example.com/track/00357000000000001234^FS
+
+^FX Route barcode
+^BY3,3,110
+^FO50,720^BCN,110,Y,N,N^FD&gt;;00357000000000001234^FS
+
+^FX Footer
+^FO50,900^GB712,3,3^FS
+^CF0,24
+^FO50,925^FB712,3,4,L,0^FDForsendelsen leveres på hverdage mellem 8 og 16. Kontakt kundeservice hvis pakken ikke er modtaget inden for fem hverdage.^FS
+^FO50,1040^A0N,24,24^FDRef: ORD-2026-00918^FS
+^FO50,1080^GB300,60,2^FS
+^FO70,1095^A0N,30,30^FDINV 44812^FS
+^FT400,1140^A0R,28,28^FDVertikal^FS
+^XZ
+</pre>
+</td>
+</tr>
+</table>
 
 ## Usage
 
@@ -63,17 +125,45 @@ Without an output path the file is written next to the input with the new extens
 
 ## Supported commands
 
-Format and fields: `^XA`, `^XZ`, `^FO`, `^FT`, `^FS`, `^FD`, `^FV`, `^SN`, `^FN`, `^FR`, `^FH`, `^FB`, `^FW`, `^FX`, `^CC`, `^CT`, `^CD`, `^CI`.
+| Format | Fields | Fonts and graphics | Label |
+| --- | --- | --- | --- |
+| `^XA` Start format | `^FO` Field origin | `^A` Font | `^PW` Print width |
+| `^XZ` End format | `^FT` Field typeset | `^A@` Font by name | `^LL` Label length |
+| `^DF` Download format | `^FS` Field separator | `^CF` Change default font | `^LH` Label home |
+| `^XF` Recall format | `^FD` Field data | `^GB` Graphic box | `^LT` Label top |
+| `^FX` Comment | `^FV` Field variable | `^GC` Graphic circle | `^LS` Label shift |
+| `^CC` Change caret | `^SN` Serialization data | `^GD` Graphic diagonal line | `^LR` Label reverse print |
+| `^CT` Change tilde | `^FN` Field number | `^GE` Graphic ellipse | `^PO` Print orientation |
+| `^CD` Change delimiter | `^FR` Field reverse print | `^GF` Graphic field | `^PM` Mirror image |
+| `^CI` Change encoding | `^FH` Field hex indicator | `~DG` Download graphic | `^PQ` Print quantity |
+| | `^FB` Field block | `~DY` Download objects | |
+| | `^FW` Field orientation | `^XG` Recall graphic | |
+| | | `^IM` Image move | |
 
-Fonts: `^A`, `^A@`, `^CF`. Font 0 is the scalable CG Triumvirate Bold Condensed. Fonts A to H are the fixed-pitch bitmap fonts; they magnify in whole steps like the printer does, and fonts B and H print capital letters only. Any other font id is treated like font 0.
+`^DF` stores a format. `^XF` recalls it and fills the `^FN` fields from the recalling format.
 
-Label: `^PW`, `^LL`, `^LH`, `^LT`, `^LS`, `^LR`, `^PO`, `^PM`, `^PQ`.
+`^GF` takes ASCII hex, run-length compressed, `:B64:` and `:Z64:` data. `~DY` takes GRF, and PNG through GD.
 
-Graphics: `^GB`, `^GC`, `^GD`, `^GE`, `^GF` (ASCII hex, run-length compressed, `:B64:` and `:Z64:`), `~DG`, `~DY` (GRF, and PNG through GD), `^XG`, `^IM`.
+Font 0 is the scalable CG Triumvirate Bold Condensed. Fonts A to H are the fixed-pitch bitmap fonts; they magnify in whole steps like the printer does, and fonts B and H print capital letters only. Any other font id is treated like font 0.
 
-Stored formats: `^DF` stores a format, `^XF` recalls it and fills the `^FN` fields from the recalling format.
+### Barcodes
 
-Barcodes: `^BC` Code 128 with the `>` invocation codes and modes N, A, U and D, `^B3` Code 39, `^BA` Code 93, `^BE` EAN-13, `^B8` EAN-8, `^BU` UPC-A, `^B9` UPC-E, `^BS` UPC/EAN extensions, `^B2` Interleaved 2 of 5, `^BI` and `^BJ` Standard 2 of 5, `^BK` Codabar, `^BM` MSI, `^BP` Plessey, `^B1` Code 11, `^BL` LOGMARS, `^BZ` POSTNET, `^B5` PLANET, `^BR` GS1 DataBar, `^B4` Code 49, `^BQ` QR Code, `^BX` Data Matrix, `^B7` PDF417, `^BO` Aztec. The `^BY` module width and default height apply to the linear symbologies. The interpretation line is printed in font A at the module magnification, below or above the bars.
+| Linear | Retail and postal | 2D and stacked |
+| --- | --- | --- |
+| `^BC` Code 128 | `^BE` EAN-13 | `^BQ` QR Code |
+| `^B3` Code 39 | `^B8` EAN-8 | `^BX` Data Matrix |
+| `^BA` Code 93 | `^BU` UPC-A | `^B7` PDF417 |
+| `^B2` Interleaved 2 of 5 | `^B9` UPC-E | `^B0`, `^BO` Aztec |
+| `^BI`, `^BJ` Standard 2 of 5 | `^BS` UPC/EAN extensions | `^B4` Code 49 |
+| `^BK` Codabar | `^BR` GS1 DataBar | |
+| `^BM` MSI | `^BZ` POSTNET | |
+| `^BP` Plessey | `^B5` PLANET | |
+| `^B1` Code 11 | | |
+| `^BL` LOGMARS | | |
+
+`^BC` supports the `>` invocation codes and the modes N, A, U and D. The `^BY` module width and default height apply to the linear symbologies. The interpretation line is printed in font A at the module magnification, below or above the bars.
+
+### Unsupported commands
 
 Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^BT` TLC39 and `^BF` MicroPDF417 throw an `UnsupportedException`.
 
