@@ -6,6 +6,7 @@ use Stilling\Zpl\Barcode\BarcodeFactory;
 use Stilling\Zpl\Barcode\BarcodeMatrix;
 use Stilling\Zpl\Barcode\Code128;
 use Stilling\Zpl\Barcode\Code128Mode;
+use Stilling\Zpl\Exceptions\ParseException;
 use Stilling\Zpl\Exceptions\UnsupportedException;
 use Stilling\Zpl\Font\Encoding;
 use Stilling\Zpl\Font\ZebraFont;
@@ -536,9 +537,11 @@ class Interpreter {
 
 	/**
 	 * ~DY image data is base64 (:B64:), zlib+base64 (:Z64:) or ASCII hex.
+	 * The decoded bytes are limited by the maxGraphicBytes option.
 	 */
 	private function objectBytes(string $data): string {
 		$data = trim($data);
+		$limit = $this->options->getMaxGraphicBytes();
 
 		if (preg_match('/^:([BZ])64:([A-Za-z0-9+\/=\s]*):[0-9A-Fa-f]{4}$/s', $data, $match) === 1) {
 			$binary = base64_decode(preg_replace('/\s+/', "", $match[2]) ?? "", true);
@@ -548,17 +551,20 @@ class Interpreter {
 			}
 
 			if ($match[1] === "Z") {
-				return Silencer::call(fn () => gzuncompress($binary)) ?? throw new UnsupportedException("Invalid zlib data in ~DY.");
+				$binary = Silencer::call(fn () => gzuncompress($binary, $limit + 1))
+					?? throw new UnsupportedException("Invalid zlib data in ~DY, or more than {$limit} bytes of it.");
 			}
-
-			return $binary;
+		} elseif (ctype_xdigit($data) && strlen($data) % 2 === 0) {
+			$binary = (string) hex2bin($data);
+		} else {
+			$binary = $data;
 		}
 
-		if (ctype_xdigit($data) && strlen($data) % 2 === 0) {
-			return (string) hex2bin($data);
+		if (strlen($binary) > $limit) {
+			throw new ParseException("The ~DY object holds " . strlen($binary) . " bytes, more than the limit of {$limit} bytes.");
 		}
 
-		return $data;
+		return $binary;
 	}
 
 	private function recallGraphic(Command $command): void {

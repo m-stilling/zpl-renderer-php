@@ -1,5 +1,6 @@
 <?php
 
+use Stilling\Zpl\Exceptions\ParseException;
 use Stilling\Zpl\Exceptions\UnsupportedException;
 use Stilling\Zpl\Model\BarcodeElement;
 use Stilling\Zpl\Model\BoxElement;
@@ -304,6 +305,19 @@ test("stored formats that recall each other are each recalled once", function ()
 	expect(array_map(fn (int $index): string => text($zpl, $index)->text, [0, 1]))->toBe(["a", "b"])
 		->and(label($zpl)->elements)->toHaveCount(2);
 });
+
+test("~DY object data larger than maxGraphicBytes is rejected before it is decoded", function (string $data) {
+	Zpl::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
+})->with([
+	":B64:" => [":B64:" . base64_encode(str_repeat("\0", 17)) . ":0000"],
+	"hex" => [str_repeat("00", 17)],
+])->throws(ParseException::class);
+
+test("~DY :Z64: data that expands beyond maxGraphicBytes is rejected", function () {
+	$data = ":Z64:" . base64_encode((string) gzcompress(str_repeat("\0", 1000))) . ":0000";
+
+	Zpl::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
+})->throws(UnsupportedException::class, "more than 16 bytes");
 
 test("^PQ, ^PO and ^PM set the label flags", function () {
 	$label = label("^XA^PQ3^POI^PMY^XZ");

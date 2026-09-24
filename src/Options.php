@@ -163,7 +163,7 @@ class Options {
 		return $this->maxPages;
 	}
 
-	/** Upper bound on the size in bytes of one ^GF or ~DG graphic, or of a ~DY graphic in GRF form, so a stray size field cannot exhaust memory. */
+	/** Upper bound on the decoded size in bytes of one ^GF, ~DG or ~DY graphic, so a stray size field cannot exhaust memory. */
 	public function maxGraphicBytes(int $maxGraphicBytes): static {
 		if ($maxGraphicBytes < 1) {
 			throw new \InvalidArgumentException("maxGraphicBytes must be at least 1.");

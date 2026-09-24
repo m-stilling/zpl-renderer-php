@@ -117,7 +117,7 @@ $sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
 | `honorLabelSize` | `true` | Let `^PW` and `^LL` change the page size. |
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
 | `maxPages` | `1000` | Upper bound on pages per PDF. |
-| `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF` or `~DG` graphic, or of a `~DY` graphic in GRF form. A larger graphic throws a `ParseException`. |
+| `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF`, `~DG` or `~DY` graphic, decoded. A larger graphic throws a `ParseException`. |
 | `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |
 | `pixelsPerDot` | `1` | Pixels per printer dot in PNG output, 1 to 8. |
 | `antialias` | `true` | Smooth text edges in PNG output with gray pixels. `false` gives black and white only, like the printer. |
