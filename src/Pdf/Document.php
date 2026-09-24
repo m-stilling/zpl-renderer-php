@@ -172,10 +172,11 @@ class Document {
 	 */
 	private static function subsetTag(array $codes): string {
 		$hash = crc32(pack("C*", ...$codes));
+		$letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		$tag = "";
 
 		for ($i = 0; $i < 6; $i++) {
-			$tag .= chr(ord("A") + $hash % 26);
+			$tag .= $letters[$hash % 26];
 			$hash = intdiv($hash, 26);
 		}
 

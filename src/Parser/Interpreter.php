@@ -885,7 +885,7 @@ class Interpreter {
 			$indicator = preg_quote($field->hexIndicator, "/");
 			$data = preg_replace_callback(
 				"/{$indicator}([0-9A-Fa-f]{2})/",
-				fn (array $match): string => chr((int) hexdec($match[1])),
+				fn (array $match): string => chr((int) hexdec($match[1]) & 0xFF),
 				$data,
 			) ?? $data;
 		}

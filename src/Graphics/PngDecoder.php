@@ -56,7 +56,7 @@ class PngDecoder {
 			}
 
 			$bits = str_pad($bits, $bytesPerRow * 8, "0");
-			$rows[] = implode("", array_map(fn (string $byte): string => chr((int) bindec($byte)), str_split($bits, 8)));
+			$rows[] = implode("", array_map(fn (string $byte): string => chr((int) bindec($byte) & 0xFF), str_split($bits, 8)));
 		}
 
 		return new Bitmap($bytesPerRow, implode("", $rows));
