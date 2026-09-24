@@ -75,7 +75,7 @@ class ZebraFont {
 			typeface: Typeface::Scalable,
 			face: $face,
 			size: $ascent / ($face->capHeight / 1000),
-			horizontalScale: $options->scalableFontCondense * $width / $height,
+			horizontalScale: $options->getScalableFontCondense() * $width / $height,
 			ascent: $ascent,
 			descent: $height - $ascent,
 			lineHeight: $height,

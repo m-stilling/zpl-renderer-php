@@ -19,9 +19,9 @@ enum Typeface {
 
 	public function file(Options $options): string {
 		return match ($this) {
-			self::Scalable => $options->scalableFontFile,
-			self::Mono => $options->monoFontFile,
-			self::MonoBold => $options->monoBoldFontFile,
+			self::Scalable => $options->getScalableFontFile(),
+			self::Mono => $options->getMonoFontFile(),
+			self::MonoBold => $options->getMonoBoldFontFile(),
 		};
 	}
 }

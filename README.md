@@ -31,6 +31,7 @@ use Stilling\Zpl\Zpl;
 
 $zpl = '^XA^FO50,50^A0N,40,40^FDHello^FS^FO50,120^BCN,80,Y,N,N^FD12345678^FS^XZ';
 $options = new Options(dpmm: 8, widthMm: 101.6, heightMm: 152.4);
+$options = (new Options())->dpmm(8)->widthMm(101.6)->heightMm(152.4);
 
 file_put_contents('label.pdf', Zpl::toPdf($zpl, $options));
 file_put_contents('label.png', Zpl::toPng($zpl, $options));
@@ -90,9 +91,23 @@ Every exception the package throws implements `Stilling\Zpl\Exceptions\ZplExcept
 | `UnsupportedException` | The input uses a feature the package does not render, or the `gd` extension is missing for PNG output. |
 | `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, or a label index that does not exist. |
 
-Invalid `Options` values throw `InvalidArgumentException` from the constructor.
+Invalid `Options` values throw `InvalidArgumentException` from the setter or the constructor.
 
 ### Options
+
+Every option has a setter that returns an `Options` instance, so the calls chain. The constructor takes the same options as named arguments. Read an option back with `getDpmm()`, `getWidthMm()` and so on.
+
+```php
+$options = (new Options())->dpmm(12)->pixelsPerDot(2)->antialias(false);
+$options = new Options(dpmm: 12, pixelsPerDot: 2, antialias: false);
+```
+
+An `Options` setter changes the instance and returns it. An `OptionsImmutable` setter leaves the instance as it is and returns a changed copy. `OptionsImmutable` extends `Options`, so it goes wherever an `Options` is expected.
+
+```php
+$base = new OptionsImmutable(dpmm: 8);
+$sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
+```
 
 | Option | Default | Effect |
 | --- | --- | --- |
@@ -109,7 +124,7 @@ Invalid `Options` values throw `InvalidArgumentException` from the constructor.
 | `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H. |
 | `monoBoldFontFile` | Roboto Mono Bold | TrueType file drawn for font B. |
 
-`Options::inches(8, 4, 6)` builds the options from a label size in inches. An `Options` object is immutable. To change a setting, construct a new one.
+`Options::inches(8, 4, 6)` builds the options from a label size in inches.
 
 ### Command line
 

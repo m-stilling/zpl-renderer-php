@@ -38,11 +38,11 @@ class PdfRenderer {
 
 		foreach ($labels as $label) {
 			$content = $this->renderLabel($label);
-			$copies = $this->options->honorQuantity ? $label->quantity : 1;
+			$copies = $this->options->getHonorQuantity() ? $label->quantity : 1;
 			$scale = 72 / $this->options->dpi();
 
 			for ($copy = 0; $copy < $copies; $copy++) {
-				if ($this->document->pageCount() >= $this->options->maxPages) {
+				if ($this->document->pageCount() >= $this->options->getMaxPages()) {
 					break 2;
 				}
 

@@ -71,7 +71,7 @@ class PngRenderer {
 	}
 
 	public function renderLabel(Label $label): string {
-		$this->scale = $this->options->pixelsPerDot;
+		$this->scale = $this->options->getPixelsPerDot();
 		$this->width = $label->width * $this->scale;
 		$this->height = $label->height * $this->scale;
 		$canvas = $this->canvas($this->width, $this->height);
@@ -265,7 +265,7 @@ class PngRenderer {
 	 * half of it is covered.
 	 */
 	private function ink(float $coverage, int|false $under): ?int {
-		if (!$this->options->antialias) {
+		if (!$this->options->getAntialias()) {
 			return $coverage >= 0.5 ? self::BLACK : null;
 		}
 

@@ -196,7 +196,7 @@ class Interpreter {
 		return new Label(
 			width: $this->labelWidth,
 			height: $this->labelHeight,
-			dpmm: $this->options->dpmm,
+			dpmm: $this->options->getDpmm(),
 			elements: $this->elements,
 			quantity: $this->quantity,
 			inverted: $this->inverted,
@@ -382,13 +382,13 @@ class Interpreter {
 	}
 
 	private function printWidth(Command $command): void {
-		if ($this->options->honorLabelSize && $command->int(0, 0) > 0) {
+		if ($this->options->getHonorLabelSize() && $command->int(0, 0) > 0) {
 			$this->labelWidth = $command->int(0, 0);
 		}
 	}
 
 	private function labelLength(Command $command): void {
-		if (!$this->options->honorLabelSize || $command->int(0, 0) <= 0) {
+		if (!$this->options->getHonorLabelSize() || $command->int(0, 0) <= 0) {
 			return;
 		}
 
