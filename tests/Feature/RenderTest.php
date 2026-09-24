@@ -57,6 +57,13 @@ test("^PQ repeats the page unless quantities are ignored, and maxPages caps it",
 		->and(pageCount(Zpl::toPdf($zpl, new Options(maxPages: 2))))->toBe(2);
 });
 
+test("the copies of a label share one content stream", function () {
+	$pdf = Zpl::toPdf("^XA^PQ4^FO0,0^GB10,10,1^FS^XZ");
+
+	expect(substr_count($pdf, "/Type /Page "))->toBe(4)
+		->and(substr_count($pdf, "endstream"))->toBe(1);
+});
+
 test("a label with no fields still gives a blank page", function () {
 	expect(pageCount(Zpl::toPdf("^XA^XZ")))->toBe(1);
 });

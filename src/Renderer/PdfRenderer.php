@@ -36,18 +36,19 @@ class PdfRenderer {
 	public function render(array $labels): string {
 		$this->document = new Document();
 
+		$scale = 72 / $this->options->dpi();
+
 		foreach ($labels as $label) {
-			$content = $this->renderLabel($label);
-			$copies = $this->options->getHonorQuantity() ? $label->quantity : 1;
-			$scale = 72 / $this->options->dpi();
+			$copies = min(
+				$this->options->getHonorQuantity() ? $label->quantity : 1,
+				$this->options->getMaxPages() - $this->document->pageCount(),
+			);
 
-			for ($copy = 0; $copy < $copies; $copy++) {
-				if ($this->document->pageCount() >= $this->options->getMaxPages()) {
-					break 2;
-				}
-
-				$this->document->addPage($label->width * $scale, $label->height * $scale, $content);
+			if ($copies < 1) {
+				break;
 			}
+
+			$this->document->addPage($label->width * $scale, $label->height * $scale, $this->renderLabel($label), $copies);
 		}
 
 		return $this->document->render();

@@ -68,15 +68,20 @@ class Document {
 		return $name;
 	}
 
-	public function addPage(float $widthPt, float $heightPt, string $content): void {
+	/**
+	 * Add a page, or several pages that share one content stream.
+	 */
+	public function addPage(float $widthPt, float $heightPt, string $content, int $copies = 1): void {
 		$contentId = $this->add("<< /Filter /FlateDecode /Length %d >>", self::deflate($content));
 		$width = self::number($widthPt);
 		$height = self::number($heightPt);
 
-		$this->pages[] = $this->add(
-			"<< /Type /Page /Parent {$this->pagesId} 0 R /MediaBox [0 0 {$width} {$height}]"
-			. " /Resources {$this->resourcesId} 0 R /Contents {$contentId} 0 R >>",
-		);
+		for ($copy = 0; $copy < $copies; $copy++) {
+			$this->pages[] = $this->add(
+				"<< /Type /Page /Parent {$this->pagesId} 0 R /MediaBox [0 0 {$width} {$height}]"
+				. " /Resources {$this->resourcesId} 0 R /Contents {$contentId} 0 R >>",
+			);
+		}
 	}
 
 	public function pageCount(): int {
