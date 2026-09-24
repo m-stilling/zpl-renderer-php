@@ -22,6 +22,7 @@ class Options {
 	private float $widthMm;
 	private float $heightMm;
 	private bool $honorLabelSize;
+	private int $maxLabelDots;
 	private bool $honorQuantity;
 	private int $maxPages;
 	private int $maxGraphicBytes;
@@ -37,6 +38,7 @@ class Options {
 		float $widthMm = 101.6,
 		float $heightMm = 152.4,
 		bool $honorLabelSize = true,
+		int $maxLabelDots = 32000,
 		bool $honorQuantity = true,
 		int $maxPages = 1000,
 		int $maxGraphicBytes = GraphicDecoder::DEFAULT_MAX_BYTES,
@@ -55,6 +57,7 @@ class Options {
 			->widthMm($widthMm)
 			->heightMm($heightMm)
 			->honorLabelSize($honorLabelSize)
+			->maxLabelDots($maxLabelDots)
 			->honorQuantity($honorQuantity)
 			->maxPages($maxPages)
 			->maxGraphicBytes($maxGraphicBytes)
@@ -133,6 +136,22 @@ class Options {
 
 	public function getHonorLabelSize(): bool {
 		return $this->honorLabelSize;
+	}
+
+	/** Largest width or length in dots that ^PW and ^LL can set. A larger value is clamped to it, like a printhead clamps ^PW. */
+	public function maxLabelDots(int $maxLabelDots): static {
+		if ($maxLabelDots < 1) {
+			throw new \InvalidArgumentException("maxLabelDots must be at least 1.");
+		}
+
+		$options = $this->target();
+		$options->maxLabelDots = $maxLabelDots;
+
+		return $options;
+	}
+
+	public function getMaxLabelDots(): int {
+		return $this->maxLabelDots;
 	}
 
 	/** Repeat a PDF page as many times as ^PQ asks for. */

@@ -390,7 +390,7 @@ class Interpreter {
 
 	private function printWidth(Command $command): void {
 		if ($this->options->getHonorLabelSize() && $command->int(0, 0) > 0) {
-			$this->labelWidth = $command->int(0, 0);
+			$this->labelWidth = min($command->int(0, 0), $this->options->getMaxLabelDots());
 		}
 	}
 
@@ -399,7 +399,7 @@ class Interpreter {
 			return;
 		}
 
-		$this->nextLabelHeight = $command->int(0, 0);
+		$this->nextLabelHeight = min($command->int(0, 0), $this->options->getMaxLabelDots());
 
 		if (!$this->fieldSeparated) {
 			$this->labelHeight = $this->nextLabelHeight;

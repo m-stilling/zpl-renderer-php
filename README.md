@@ -115,6 +115,7 @@ $sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
 | `widthMm` | `101.6` | Label width. `^PW` overrides it for its label and the labels after it. |
 | `heightMm` | `152.4` | Label height. `^LL` overrides it for its label and the labels after it. |
 | `honorLabelSize` | `true` | Let `^PW` and `^LL` change the page size. |
+| `maxLabelDots` | `32000` | Largest width or length in dots that `^PW` and `^LL` can set. A larger value is clamped to it. Lower it when untrusted ZPL is rendered to PNG, since the image holds every dot. |
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
 | `maxPages` | `1000` | Upper bound on pages per PDF. |
 | `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF`, `~DG` or `~DY` graphic, decoded. A larger graphic throws a `ParseException`. |
