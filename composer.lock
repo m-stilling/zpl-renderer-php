@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "11c222a8b693a669e530a6254d7c4d1f",
+    "content-hash": "f4589381db4c8801ee6457e1dcbe0865",
     "packages": [
         {
             "name": "tecnickcom/tc-lib-barcode",
@@ -219,6 +219,65 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "andersonls/zpl",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/andersonls/zpl.git",
+                "reference": "36fba6aadbf5549578c614504d0c9a11c046833f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/andersonls/zpl/zipball/36fba6aadbf5549578c614504d0c9a11c046833f",
+                "reference": "36fba6aadbf5549578c614504d0c9a11c046833f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "ext-gd": "*",
+                "ext-sockets": "*",
+                "laravel/pint": "^1.0",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.5|^12.4"
+            },
+            "suggest": {
+                "ext-gd": "*",
+                "ext-sockets": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Zpl\\": "src/"
+                },
+                "psr-4": {
+                    "Zpl\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Anderson Luiz Silvério",
+                    "email": "andersonlsilverio@gmail.com"
+                }
+            ],
+            "description": " This library is a php wrapper for the ZPL Programming Language.",
+            "homepage": "https://github.com/andersonls/zpl",
+            "keywords": [
+                "php-wrapper",
+                "zpl"
+            ],
+            "support": {
+                "issues": "https://github.com/andersonls/zpl/issues",
+                "source": "https://github.com/andersonls/zpl/tree/v1.0.1"
+            },
+            "time": "2026-03-10T14:20:30+00:00"
+        },
         {
             "name": "brianium/paratest",
             "version": "v7.20.0",
@@ -2377,6 +2436,57 @@
                 "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
             },
             "time": "2021-10-29T13:26:27+00:00"
+        },
+        {
+            "name": "robgridley/zebra",
+            "version": "v2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/robgridley/zebra.git",
+                "reference": "aed6c02c1976db5864e917ad8585ac11d8514bde"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/robgridley/zebra/zipball/aed6c02c1976db5864e917ad8585ac11d8514bde",
+                "reference": "aed6c02c1976db5864e917ad8585ac11d8514bde",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^7.1"
+            },
+            "suggest": {
+                "ext-gd": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Zebra\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rob Gridley",
+                    "email": "me@robgridley.com"
+                }
+            ],
+            "description": "PHP ZPL builder, image conversion and a basic client for network-connected Zebra label printers.",
+            "keywords": [
+                "image",
+                "zebra",
+                "zpl"
+            ],
+            "support": {
+                "issues": "https://github.com/robgridley/zebra/issues",
+                "source": "https://github.com/robgridley/zebra/tree/v2.0.2"
+            },
+            "time": "2022-01-18T21:33:15+00:00"
         },
         {
             "name": "sebastian/cli-parser",

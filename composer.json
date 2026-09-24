@@ -22,7 +22,9 @@
 	},
 	"require-dev": {
 		"pestphp/pest": "^4.0",
-		"phpstan/phpstan": "^2.0"
+		"phpstan/phpstan": "^2.0",
+		"robgridley/zebra": "^2.0",
+		"andersonls/zpl": "^1.0"
 	},
 	"suggest": {
 		"ext-gd": "Required for PNG output and to decode PNG images sent with ~DY"
