@@ -340,6 +340,7 @@ describe("barcodes", function () {
 
 		builderLabels($builder->toZpl());
 	})->with([
+		Barcode::CODABLOCK,
 		Barcode::UPS,
 		Barcode::MICROPDF417,
 		Barcode::TLC39,

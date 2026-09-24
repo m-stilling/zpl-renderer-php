@@ -323,7 +323,7 @@ class Interpreter {
 			"BX" => $this->dataMatrix($command),
 			"B7" => $this->pdf417($command),
 			"BO", "B0" => $this->aztec($command),
-			"BD", "BT", "BF", "BW" => throw new UnsupportedException("Barcode command ^{$command->name} is not supported."),
+			"BB", "BD", "BT", "BF", "BW" => throw new UnsupportedException("Barcode command ^{$command->name} is not supported."),
 			default => null,
 		};
 	}

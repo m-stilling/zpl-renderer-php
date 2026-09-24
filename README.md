@@ -166,7 +166,7 @@ Font 0 is the scalable CG Triumvirate Bold Condensed. Fonts A to H are the fixed
 
 ### Unsupported commands
 
-Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^BT` TLC39 and `^BF` MicroPDF417 throw an `UnsupportedException`.
+Unknown commands are ignored, like the printer ignores them. `^BB` Codablock, `^BD` MaxiCode, `^BT` TLC39 and `^BF` MicroPDF417 throw an `UnsupportedException`.
 
 ## Fonts
 

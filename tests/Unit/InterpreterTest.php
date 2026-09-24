@@ -239,9 +239,9 @@ test("2D symbols scale by their own magnification", function () {
 		->and(barcode($zpl, 2)->moduleHeight)->toBe(3.0);
 });
 
-test("unsupported barcodes throw", function () {
-	label("^XA^FO0,0^BDN^FDx^FS^XZ");
-})->throws(UnsupportedException::class);
+test("unsupported barcodes throw", function (string $command) {
+	label("^XA^FO0,0{$command}^FDx^FS^XZ");
+})->with(["^BBN", "^BDN", "^BTN", "^BFN"])->throws(UnsupportedException::class);
 
 test("unknown commands are ignored", function () {
 	expect(label("^XA^MMT^MNY^JUS^ZZ1,2^FO0,0^FDx^FS^XZ")->elements)->toHaveCount(1);
