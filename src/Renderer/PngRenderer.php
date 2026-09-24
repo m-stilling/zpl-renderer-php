@@ -38,6 +38,9 @@ class PngRenderer {
 	/** GD sizes TrueType text in points at 96 dpi, so one pixel of em is 0.75 points. */
 	private const float POINTS_PER_PIXEL = 0.75;
 
+	/** Factor by which text is drawn larger before it is reduced to one-bit pixels. */
+	private const int SUPERSAMPLE = 4;
+
 	/** @var array<string, float> cap height as a fraction of the em, by font file */
 	private static array $capHeights = [];
 
@@ -202,10 +205,15 @@ class PngRenderer {
 		}
 	}
 
+	/**
+	 * Draw a word at SUPERSAMPLE times its size, then reduce it to its place
+	 * in one step, so the threshold works on exact coverage and every stem
+	 * keeps the same width.
+	 */
 	private function word(\GdImage $layer, Matrix $matrix, Orientation $orientation, ResolvedFont $font, string $winAnsi, float $x, float $baseline): void {
 		$file = $this->fontFile($font);
 		$utf8 = mb_convert_encoding($winAnsi, "UTF-8", "Windows-1252");
-		$em = $font->ascent * $this->scale / $this->capHeight($file);
+		$em = $font->ascent * $this->scale * self::SUPERSAMPLE / $this->capHeight($file);
 		$points = $em * self::POINTS_PER_PIXEL;
 		$box = imagettfbbox($points, 0, $file, $utf8);
 
@@ -214,12 +222,12 @@ class PngRenderer {
 		}
 
 		$left = (int) $box[0];
-		$naturalWidth = max(1, (int) $box[2] - $left);
-		$ascent = max(1, (int) -$box[7]);
-		$descent = max(0, (int) $box[1]);
-		$rows = $ascent + $descent + 2;
+		$naturalWidth = max(1, (int) $box[2] - $left) + 2 * self::SUPERSAMPLE;
+		$ascentRows = max(1, (int) ceil(-$box[7] / self::SUPERSAMPLE)) + 1;
+		$descentRows = max(0, (int) ceil($box[1] / self::SUPERSAMPLE)) + 1;
+		$rows = $ascentRows + $descentRows;
 		$targetWidth = max(1, (int) round($font->width($winAnsi) * $this->scale));
-		$glyphs = imagecreatetruecolor($naturalWidth + 2, $rows);
+		$glyphs = imagecreatetruecolor($naturalWidth, $rows * self::SUPERSAMPLE);
 		$squeezed = imagecreatetruecolor($targetWidth, $rows);
 
 		if ($glyphs === false || $squeezed === false) {
@@ -229,10 +237,10 @@ class PngRenderer {
 		$white = (int) imagecolorallocate($glyphs, 255, 255, 255);
 		$black = (int) imagecolorallocate($glyphs, 0, 0, 0);
 		imagefill($glyphs, 0, 0, $white);
-		imagettftext($glyphs, $points, 0, 1 - $left, $ascent + 1, $black, $file, $utf8);
-		imagecopyresampled($squeezed, $glyphs, 0, 0, 0, 0, $targetWidth, $rows, $naturalWidth + 2, $rows);
+		imagettftext($glyphs, $points, 0, self::SUPERSAMPLE - $left, $ascentRows * self::SUPERSAMPLE, $black, $file, $utf8);
+		imagecopyresampled($squeezed, $glyphs, 0, 0, 0, 0, $targetWidth, $rows, $naturalWidth, $rows * self::SUPERSAMPLE);
 
-		$this->place($layer, $this->threshold($squeezed), $matrix, $orientation, $x, $baseline - ($ascent + 1) / $this->scale);
+		$this->place($layer, $this->threshold($squeezed), $matrix, $orientation, $x, $baseline - $ascentRows / $this->scale);
 	}
 
 	/**
