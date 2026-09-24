@@ -41,11 +41,14 @@ class TextLayout {
 		$width = $block->width;
 
 		foreach ($paragraphs as $paragraph) {
-			foreach (self::wrap($paragraph, $font, $width, $block->hangingIndent) as $index => $text) {
+			$wrapped = self::wrap($paragraph, $font, $width, $block->hangingIndent);
+			$last = array_key_last($wrapped);
+
+			foreach ($wrapped as $index => $text) {
 				$indent = count($lines) === 0 ? 0 : $block->hangingIndent;
 				$available = $width - $indent;
 				$lineWidth = $font->width($text);
-				$lastOfParagraph = $index === array_key_last(self::wrap($paragraph, $font, $width, $block->hangingIndent));
+				$lastOfParagraph = $index === $last;
 				$x = $indent;
 				$wordSpacing = 0.0;
 
