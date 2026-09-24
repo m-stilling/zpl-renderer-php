@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
 /**
  * ^FB parameters: wrap the field text inside a block.

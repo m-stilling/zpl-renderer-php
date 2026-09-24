@@ -1,11 +1,11 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\DiagonalElement;
-use Stilling\Zpl\Model\EllipseElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\DiagonalElement;
+use Stilling\ZplRenderer\Model\EllipseElement;
 
 /**
  * The outlines of the ^GB, ^GC, ^GE and ^GD graphics, in their local box.

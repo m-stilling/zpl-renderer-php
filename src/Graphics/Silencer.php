@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Graphics;
+namespace Stilling\ZplRenderer\Graphics;
 
 /**
  * Runs a decoder that reports bad input through PHP warnings, and turns the

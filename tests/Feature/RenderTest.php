@@ -1,7 +1,7 @@
 <?php
 
-use Stilling\Zpl\Options;
-use Stilling\Zpl\Zpl;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\Zpl;
 
 /**
  * Decompress every content stream of a PDF, leaving out images and font files.

@@ -1,6 +1,6 @@
 <?php
 
-use Stilling\Zpl\Renderer\GlyphRaster;
+use Stilling\ZplRenderer\Renderer\GlyphRaster;
 
 /**
  * @param list<array{float, float}> $points

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
 /**
  * A 2D affine transform in the PDF operand order: x' = a x + c y + e, y' = b x + d y + f.

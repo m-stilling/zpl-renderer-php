@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Font;
+namespace Stilling\ZplRenderer\Font;
 
-use Stilling\Zpl\Exceptions\RenderException;
+use Stilling\ZplRenderer\Exceptions\RenderException;
 
 /**
  * Reads a TrueType file: the name and metrics a PDF font descriptor needs,

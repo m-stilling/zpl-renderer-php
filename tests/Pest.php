@@ -56,18 +56,18 @@ function pngBytes(GdImage $image): string {
 /**
  * Parse the ZPL and check that every label renders to PDF and PNG.
  *
- * @return list<Stilling\Zpl\Model\Label>
+ * @return list<Stilling\ZplRenderer\Model\Label>
  */
 function builderLabels(string $zpl): array {
-	$labels = Stilling\Zpl\Zpl::parse($zpl);
+	$labels = Stilling\ZplRenderer\Zpl::parse($zpl);
 
-	expect(Stilling\Zpl\Zpl::toPdf($zpl))->toStartWith("%PDF-")
-		->and(Stilling\Zpl\Zpl::toPngs($zpl))->toHaveCount(count($labels));
+	expect(Stilling\ZplRenderer\Zpl::toPdf($zpl))->toStartWith("%PDF-")
+		->and(Stilling\ZplRenderer\Zpl::toPngs($zpl))->toHaveCount(count($labels));
 
 	return $labels;
 }
 
-function builderLabel(string $zpl): Stilling\Zpl\Model\Label {
+function builderLabel(string $zpl): Stilling\ZplRenderer\Model\Label {
 	$labels = builderLabels($zpl);
 
 	expect($labels)->toHaveCount(1);
@@ -76,11 +76,11 @@ function builderLabel(string $zpl): Stilling\Zpl\Model\Label {
 }
 
 /**
- * @template T of Stilling\Zpl\Model\Element
+ * @template T of Stilling\ZplRenderer\Model\Element
  * @param class-string<T> $class
  * @return T
  */
-function builderElement(Stilling\Zpl\Model\Label $label, int $index, string $class): Stilling\Zpl\Model\Element {
+function builderElement(Stilling\ZplRenderer\Model\Label $label, int $index, string $class): Stilling\ZplRenderer\Model\Element {
 	$element = $label->elements[$index] ?? null;
 
 	expect($element)->toBeInstanceOf($class);
@@ -92,7 +92,7 @@ function builderElement(Stilling\Zpl\Model\Label $label, int $index, string $cla
 /**
  * @param callable(int, int): bool $black whether the source pixel at x, y is black
  */
-function expectBitmap(Stilling\Zpl\Model\ImageElement $element, int $width, int $height, callable $black): void {
+function expectBitmap(Stilling\ZplRenderer\Model\ImageElement $element, int $width, int $height, callable $black): void {
 	$wrong = 0;
 
 	for ($y = 0; $y < $height; $y++) {
@@ -108,6 +108,6 @@ function expectBitmap(Stilling\Zpl\Model\ImageElement $element, int $width, int 
 		->and($wrong)->toBe(0);
 }
 
-function expectBitmapMatches(Stilling\Zpl\Model\ImageElement $element, GdImage $source): void {
+function expectBitmapMatches(Stilling\ZplRenderer\Model\ImageElement $element, GdImage $source): void {
 	expectBitmap($element, imagesx($source), imagesy($source), fn (int $x, int $y): bool => (imagecolorat($source, $x, $y) & 0xFF) < 128);
 }

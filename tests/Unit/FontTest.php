@@ -1,13 +1,13 @@
 <?php
 
-use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\Typeface;
-use Stilling\Zpl\Font\ZebraFont;
-use Stilling\Zpl\Model\FieldBlock;
-use Stilling\Zpl\Model\FontSpec;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
-use Stilling\Zpl\Renderer\TextLayout;
+use Stilling\ZplRenderer\Font\Encoding;
+use Stilling\ZplRenderer\Font\Typeface;
+use Stilling\ZplRenderer\Font\ZebraFont;
+use Stilling\ZplRenderer\Model\FieldBlock;
+use Stilling\ZplRenderer\Model\FontSpec;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
+use Stilling\ZplRenderer\Renderer\TextLayout;
 
 test("the scalable font keeps the requested height as its cell and condenses the width", function () {
 	$font = ZebraFont::resolve(new FontSpec("0", 40, 40));

@@ -32,7 +32,7 @@
 	"bin": ["bin/zpl"],
 	"autoload": {
 		"psr-4": {
-			"Stilling\\Zpl\\": "src/"
+			"Stilling\\ZplRenderer\\": "src/"
 		}
 	},
 	"autoload-dev": {

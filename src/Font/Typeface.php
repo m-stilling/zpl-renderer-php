@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Font;
+namespace Stilling\ZplRenderer\Font;
 
-use Stilling\Zpl\Options;
+use Stilling\ZplRenderer\Options;
 
 /**
  * The font files the printer fonts are drawn with.

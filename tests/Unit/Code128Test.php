@@ -1,9 +1,9 @@
 <?php
 
 use Com\Tecnick\Barcode\Barcode;
-use Stilling\Zpl\Barcode\Code128;
-use Stilling\Zpl\Barcode\Code128Mode;
-use Stilling\Zpl\Exceptions\RenderException;
+use Stilling\ZplRenderer\Barcode\Code128;
+use Stilling\ZplRenderer\Barcode\Code128Mode;
+use Stilling\ZplRenderer\Exceptions\RenderException;
 
 function referencePattern(string $type, string $data): string {
 	$rows = (new Barcode())->getBarcodeObj($type, $data, -1, -1)->getGridArray();

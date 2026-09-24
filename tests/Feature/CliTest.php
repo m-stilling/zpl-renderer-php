@@ -1,6 +1,6 @@
 <?php
 
-use Stilling\Zpl\Cli;
+use Stilling\ZplRenderer\Cli;
 
 /**
  * @param list<string> $args

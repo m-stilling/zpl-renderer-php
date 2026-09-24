@@ -1,23 +1,23 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Exceptions\RenderException;
-use Stilling\Zpl\Exceptions\UnsupportedException;
-use Stilling\Zpl\Font\ResolvedFont;
-use Stilling\Zpl\Font\ZebraFont;
-use Stilling\Zpl\Graphics\Bitmap;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\DiagonalElement;
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\EllipseElement;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Label;
-use Stilling\Zpl\Model\Orientation;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Options;
+use Stilling\ZplRenderer\Exceptions\RenderException;
+use Stilling\ZplRenderer\Exceptions\UnsupportedException;
+use Stilling\ZplRenderer\Font\ResolvedFont;
+use Stilling\ZplRenderer\Font\ZebraFont;
+use Stilling\ZplRenderer\Graphics\Bitmap;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\DiagonalElement;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\EllipseElement;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Label;
+use Stilling\ZplRenderer\Model\Orientation;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Options;
 
 /**
  * Draws labels as grayscale PNG images with GD, one image per label, at

@@ -1,9 +1,9 @@
 <?php
 
-namespace Stilling\Zpl\Pdf;
+namespace Stilling\ZplRenderer\Pdf;
 
-use Stilling\Zpl\Font\TrueTypeFont;
-use Stilling\Zpl\Graphics\Bitmap;
+use Stilling\ZplRenderer\Font\TrueTypeFont;
+use Stilling\ZplRenderer\Graphics\Bitmap;
 
 /**
  * A minimal PDF writer: pages with content streams, the fonts, an extended

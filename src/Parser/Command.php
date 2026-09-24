@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Parser;
+namespace Stilling\ZplRenderer\Parser;
 
 /**
  * One ZPL command: the two-letter name and the raw parameter string that follows it.

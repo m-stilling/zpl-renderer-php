@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
 /**
  * ^GC graphic circle.

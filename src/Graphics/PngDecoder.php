@@ -1,9 +1,9 @@
 <?php
 
-namespace Stilling\Zpl\Graphics;
+namespace Stilling\ZplRenderer\Graphics;
 
-use Stilling\Zpl\Exceptions\ParseException;
-use Stilling\Zpl\Exceptions\UnsupportedException;
+use Stilling\ZplRenderer\Exceptions\ParseException;
+use Stilling\ZplRenderer\Exceptions\UnsupportedException;
 
 /**
  * Turns a PNG (or any format GD reads) into a one-bit Bitmap by thresholding

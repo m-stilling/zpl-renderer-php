@@ -1,11 +1,11 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\ResolvedFont;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
+use Stilling\ZplRenderer\Font\Encoding;
+use Stilling\ZplRenderer\Font\ResolvedFont;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
 
 /**
  * Breaks the text of a field into positioned lines, in dots, with the top-left

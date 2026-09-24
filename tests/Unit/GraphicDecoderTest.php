@@ -1,10 +1,10 @@
 <?php
 
-use Stilling\Zpl\Exceptions\ParseException;
-use Stilling\Zpl\Graphics\Bitmap;
-use Stilling\Zpl\Graphics\GraphicDecoder;
-use Stilling\Zpl\Graphics\GraphicStore;
-use Stilling\Zpl\Graphics\PngDecoder;
+use Stilling\ZplRenderer\Exceptions\ParseException;
+use Stilling\ZplRenderer\Graphics\Bitmap;
+use Stilling\ZplRenderer\Graphics\GraphicDecoder;
+use Stilling\ZplRenderer\Graphics\GraphicStore;
+use Stilling\ZplRenderer\Graphics\PngDecoder;
 
 /**
  * @return list<string>

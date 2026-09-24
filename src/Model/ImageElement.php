@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
-use Stilling\Zpl\Graphics\Bitmap;
+use Stilling\ZplRenderer\Graphics\Bitmap;
 
 /**
  * A one-bit image from ^GF, ^XG, ^IM or ~DY.

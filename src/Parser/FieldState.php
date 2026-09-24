@@ -1,10 +1,10 @@
 <?php
 
-namespace Stilling\Zpl\Parser;
+namespace Stilling\ZplRenderer\Parser;
 
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\FieldBlock;
-use Stilling\Zpl\Model\Justification;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\FieldBlock;
+use Stilling\ZplRenderer\Model\Justification;
 
 /**
  * Everything collected for the field being built, from ^FO or ^FT up to ^FS.

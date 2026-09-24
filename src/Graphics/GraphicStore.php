@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Graphics;
+namespace Stilling\ZplRenderer\Graphics;
 
 /**
  * Graphics downloaded with ~DG or ~DY, keyed by name, so ^XG and ^IM can recall them.

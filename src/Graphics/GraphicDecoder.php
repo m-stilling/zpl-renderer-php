@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Graphics;
+namespace Stilling\ZplRenderer\Graphics;
 
-use Stilling\Zpl\Exceptions\ParseException;
+use Stilling\ZplRenderer\Exceptions\ParseException;
 
 /**
  * Decodes the data part of ~DG and ^GF: plain hex, Zebra run-length compressed

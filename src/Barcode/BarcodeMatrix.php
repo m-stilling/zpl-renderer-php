@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Barcode;
+namespace Stilling\ZplRenderer\Barcode;
 
 /**
  * The dark cells of a barcode as rectangles in module units: [x, y, width, height].

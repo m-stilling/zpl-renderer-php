@@ -1,35 +1,35 @@
 <?php
 
-namespace Stilling\Zpl\Parser;
+namespace Stilling\ZplRenderer\Parser;
 
-use Stilling\Zpl\Barcode\BarcodeFactory;
-use Stilling\Zpl\Barcode\BarcodeMatrix;
-use Stilling\Zpl\Barcode\Code128;
-use Stilling\Zpl\Barcode\Code128Mode;
-use Stilling\Zpl\Exceptions\ParseException;
-use Stilling\Zpl\Exceptions\UnsupportedException;
-use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\ZebraFont;
-use Stilling\Zpl\Graphics\Bitmap;
-use Stilling\Zpl\Graphics\GraphicDecoder;
-use Stilling\Zpl\Graphics\GraphicStore;
-use Stilling\Zpl\Graphics\PngDecoder;
-use Stilling\Zpl\Graphics\Silencer;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\DiagonalElement;
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\EllipseElement;
-use Stilling\Zpl\Model\FieldBlock;
-use Stilling\Zpl\Model\FontSpec;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Justification;
-use Stilling\Zpl\Model\Label;
-use Stilling\Zpl\Model\Orientation;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
-use Stilling\Zpl\Options;
+use Stilling\ZplRenderer\Barcode\BarcodeFactory;
+use Stilling\ZplRenderer\Barcode\BarcodeMatrix;
+use Stilling\ZplRenderer\Barcode\Code128;
+use Stilling\ZplRenderer\Barcode\Code128Mode;
+use Stilling\ZplRenderer\Exceptions\ParseException;
+use Stilling\ZplRenderer\Exceptions\UnsupportedException;
+use Stilling\ZplRenderer\Font\Encoding;
+use Stilling\ZplRenderer\Font\ZebraFont;
+use Stilling\ZplRenderer\Graphics\Bitmap;
+use Stilling\ZplRenderer\Graphics\GraphicDecoder;
+use Stilling\ZplRenderer\Graphics\GraphicStore;
+use Stilling\ZplRenderer\Graphics\PngDecoder;
+use Stilling\ZplRenderer\Graphics\Silencer;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\DiagonalElement;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\EllipseElement;
+use Stilling\ZplRenderer\Model\FieldBlock;
+use Stilling\ZplRenderer\Model\FontSpec;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Justification;
+use Stilling\ZplRenderer\Model\Label;
+use Stilling\ZplRenderer\Model\Orientation;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
+use Stilling\ZplRenderer\Options;
 
 /**
  * Walks the command stream and builds one Label per ^XA ... ^XZ format.

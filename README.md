@@ -26,8 +26,8 @@ Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the
 ## Usage
 
 ```php
-use Stilling\Zpl\Options;
-use Stilling\Zpl\Zpl;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\Zpl;
 
 $zpl = '^XA^FO50,50^A0N,40,40^FDHello^FS^FO50,120^BCN,80,Y,N,N^FD12345678^FS^XZ';
 $options = new Options(dpmm: 8, widthMm: 101.6, heightMm: 152.4);
@@ -70,7 +70,7 @@ Every element has `x` and `y`, an `orientation` (`Normal`, `Rotated`, `Inverted`
 | `ImageElement` | `^GF`, `^XG`, `^IM`, `~DY` | `bitmap` with one bit per dot, `magnificationX`, `magnificationY`. |
 
 ```php
-use Stilling\Zpl\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextElement;
 
 foreach (Zpl::parse($zpl) as $label) {
     foreach ($label->elements as $element) {
@@ -83,7 +83,7 @@ foreach (Zpl::parse($zpl) as $label) {
 
 ### Errors
 
-Every exception the package throws implements `Stilling\Zpl\Exceptions\ZplException`. Catch that interface to catch them all.
+Every exception the package throws implements `Stilling\ZplRenderer\Exceptions\ZplException`. Catch that interface to catch them all.
 
 | Exception | Thrown when |
 | --- | --- |

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Graphics;
+namespace Stilling\ZplRenderer\Graphics;
 
 /**
  * A one-bit image, packed one row per bytesPerRow bytes, most significant bit

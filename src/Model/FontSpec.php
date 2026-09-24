@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
 /**
  * The font a text field is set in: the ZPL font id plus the requested cell size in dots.

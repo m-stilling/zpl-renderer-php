@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
 /**
  * One laid-out line of text: WinAnsi bytes and the position of its baseline start.

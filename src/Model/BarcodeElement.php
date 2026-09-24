@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
-use Stilling\Zpl\Barcode\BarcodeMatrix;
+use Stilling\ZplRenderer\Barcode\BarcodeMatrix;
 
 /**
  * An encoded barcode, ready to draw: a matrix of bars in module units plus the

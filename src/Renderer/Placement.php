@@ -1,9 +1,9 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\Justification;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\Justification;
 
 /**
  * Where a field goes on the label. Every element is drawn in a local box

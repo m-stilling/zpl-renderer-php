@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
 /**
  * Something drawn on a label. Positions and sizes are in printer dots.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Exceptions;
+namespace Stilling\ZplRenderer\Exceptions;
 
 /**
  * Thrown when the input uses a feature this package does not render.

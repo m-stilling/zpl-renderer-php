@@ -1,12 +1,12 @@
 <?php
 
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Orientation;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Orientation;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
 use Zebra\Zpl\Builder;
 use Zebra\Zpl\GdDecoder;
 use Zebra\Zpl\Image;

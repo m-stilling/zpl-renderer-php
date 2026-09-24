@@ -1,13 +1,13 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\ResolvedFont;
-use Stilling\Zpl\Font\ZebraFont;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\FontSpec;
-use Stilling\Zpl\Options;
+use Stilling\ZplRenderer\Font\Encoding;
+use Stilling\ZplRenderer\Font\ResolvedFont;
+use Stilling\ZplRenderer\Font\ZebraFont;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\FontSpec;
+use Stilling\ZplRenderer\Options;
 
 /**
  * The geometry of a barcode field in its local box: where the bars go and

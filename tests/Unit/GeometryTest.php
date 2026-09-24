@@ -1,13 +1,13 @@
 <?php
 
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\DiagonalElement;
-use Stilling\Zpl\Model\Justification;
-use Stilling\Zpl\Model\Orientation;
-use Stilling\Zpl\Renderer\Matrix;
-use Stilling\Zpl\Renderer\Path;
-use Stilling\Zpl\Renderer\Placement;
-use Stilling\Zpl\Renderer\Shapes;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\DiagonalElement;
+use Stilling\ZplRenderer\Model\Justification;
+use Stilling\ZplRenderer\Model\Orientation;
+use Stilling\ZplRenderer\Renderer\Matrix;
+use Stilling\ZplRenderer\Renderer\Path;
+use Stilling\ZplRenderer\Renderer\Placement;
+use Stilling\ZplRenderer\Renderer\Shapes;
 
 test("a matrix applies, scales and bounds", function () {
 	$matrix = (new Matrix(0, 1, -1, 0, 10, 20))->scaled(2);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
 /**
  * Measures how much of each pixel a glyph outline covers, under the nonzero

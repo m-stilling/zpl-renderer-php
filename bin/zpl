@@ -8,4 +8,4 @@ foreach ([__DIR__ . "/../vendor/autoload.php", __DIR__ . "/../../../autoload.php
 	}
 }
 
-exit((new Stilling\Zpl\Cli())->run($argv, STDOUT, STDERR));
+exit((new Stilling\ZplRenderer\Cli())->run($argv, STDOUT, STDERR));

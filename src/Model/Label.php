@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Model;
+namespace Stilling\ZplRenderer\Model;
 
 /**
  * One label format (^XA ... ^XZ) after interpretation: a page size and the elements on it.

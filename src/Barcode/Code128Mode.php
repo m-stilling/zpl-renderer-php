@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Barcode;
+namespace Stilling\ZplRenderer\Barcode;
 
 /**
  * The ^BC mode parameter.

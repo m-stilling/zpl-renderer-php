@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Exceptions;
+namespace Stilling\ZplRenderer\Exceptions;
 
 /**
  * Marker interface for every exception this package throws.

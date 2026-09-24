@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Barcode;
+namespace Stilling\ZplRenderer\Barcode;
 
-use Stilling\Zpl\Exceptions\RenderException;
+use Stilling\ZplRenderer\Exceptions\RenderException;
 
 /**
  * Code 128 with the ZPL ^BC semantics: subsets A, B and C, the ">" invocation

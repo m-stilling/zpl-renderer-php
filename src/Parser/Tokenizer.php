@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Parser;
+namespace Stilling\ZplRenderer\Parser;
 
-use Stilling\Zpl\Exceptions\ParseException;
+use Stilling\ZplRenderer\Exceptions\ParseException;
 
 /**
  * Splits raw ZPL into commands. Honors ^CC, ^CT and ^CD, which change the

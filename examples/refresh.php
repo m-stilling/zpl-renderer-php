@@ -10,7 +10,7 @@
 
 require __DIR__ . "/../vendor/autoload.php";
 
-use Stilling\Zpl\Zpl;
+use Stilling\ZplRenderer\Zpl;
 
 foreach (glob(__DIR__ . "/*.zpl") ?: [] as $file) {
 	$base = substr($file, 0, -4);

@@ -1,7 +1,7 @@
 <?php
 
-use Stilling\Zpl\Options;
-use Stilling\Zpl\OptionsImmutable;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\OptionsImmutable;
 
 test("the constructor takes every option as a named argument", function () {
 	$options = new Options(dpmm: 12, widthMm: 50, heightMm: 25, pixelsPerDot: 2, antialias: false);

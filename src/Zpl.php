@@ -1,13 +1,13 @@
 <?php
 
-namespace Stilling\Zpl;
+namespace Stilling\ZplRenderer;
 
-use Stilling\Zpl\Exceptions\RenderException;
-use Stilling\Zpl\Model\Label;
-use Stilling\Zpl\Parser\Interpreter;
-use Stilling\Zpl\Parser\Tokenizer;
-use Stilling\Zpl\Renderer\PdfRenderer;
-use Stilling\Zpl\Renderer\PngRenderer;
+use Stilling\ZplRenderer\Exceptions\RenderException;
+use Stilling\ZplRenderer\Model\Label;
+use Stilling\ZplRenderer\Parser\Interpreter;
+use Stilling\ZplRenderer\Parser\Tokenizer;
+use Stilling\ZplRenderer\Renderer\PdfRenderer;
+use Stilling\ZplRenderer\Renderer\PngRenderer;
 
 /**
  * Entry point: turn ZPL into labels, and labels into output formats.

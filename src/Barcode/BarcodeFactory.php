@@ -1,9 +1,9 @@
 <?php
 
-namespace Stilling\Zpl\Barcode;
+namespace Stilling\ZplRenderer\Barcode;
 
 use Com\Tecnick\Barcode\Barcode;
-use Stilling\Zpl\Exceptions\RenderException;
+use Stilling\ZplRenderer\Exceptions\RenderException;
 
 /**
  * Encodes every symbology except Code 128 through tc-lib-barcode.

@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl;
+namespace Stilling\ZplRenderer;
 
-use Stilling\Zpl\Graphics\GraphicDecoder;
+use Stilling\ZplRenderer\Graphics\GraphicDecoder;
 
 /**
  * Printer and label settings that the ZPL itself does not carry.

@@ -1,8 +1,8 @@
 <?php
 
-use Stilling\Zpl\Exceptions\RenderException;
-use Stilling\Zpl\Font\TrueTypeFont;
-use Stilling\Zpl\Options;
+use Stilling\ZplRenderer\Exceptions\RenderException;
+use Stilling\ZplRenderer\Font\TrueTypeFont;
+use Stilling\ZplRenderer\Options;
 
 test("reads the name, metrics and widths of Roboto Mono", function () {
 	$font = new TrueTypeFont(Options::FONT_DIRECTORY . "/RobotoMono-Regular.ttf");

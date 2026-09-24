@@ -1,8 +1,8 @@
 <?php
 
-use Stilling\Zpl\Exceptions\RenderException;
-use Stilling\Zpl\Options;
-use Stilling\Zpl\Zpl;
+use Stilling\ZplRenderer\Exceptions\RenderException;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\Zpl;
 
 function png(string $zpl, ?Options $options = null): GdImage {
 	$image = imagecreatefromstring(Zpl::toPng($zpl, $options));

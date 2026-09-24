@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl;
+namespace Stilling\ZplRenderer;
 
-use Stilling\Zpl\Graphics\Silencer;
+use Stilling\ZplRenderer\Graphics\Silencer;
 
 /**
  * The command behind bin/zpl.

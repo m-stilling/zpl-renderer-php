@@ -1,7 +1,7 @@
 <?php
 
-use Stilling\Zpl\Exceptions\ParseException;
-use Stilling\Zpl\Parser\Tokenizer;
+use Stilling\ZplRenderer\Exceptions\ParseException;
+use Stilling\ZplRenderer\Parser\Tokenizer;
 
 /**
  * @return list<array{string, string}> command names and parameters

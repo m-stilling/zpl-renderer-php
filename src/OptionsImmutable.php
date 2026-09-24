@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl;
+namespace Stilling\ZplRenderer;
 
 /**
  * Options whose setters return a changed copy and leave the instance as it is.

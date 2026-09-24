@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Font;
+namespace Stilling\ZplRenderer\Font;
 
 /**
  * Text conversion between the ZPL input and the WinAnsi bytes that the fonts are drawn with.

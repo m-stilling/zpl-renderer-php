@@ -1,13 +1,13 @@
 <?php
 
-use Stilling\Zpl\Exceptions\UnsupportedException;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Orientation as ModelOrientation;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
+use Stilling\ZplRenderer\Exceptions\UnsupportedException;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Orientation as ModelOrientation;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
 use Zpl\Commands\GraphicField;
 use Zpl\Enums\Align;
 use Zpl\Enums\Barcode;

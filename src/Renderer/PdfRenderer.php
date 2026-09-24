@@ -1,22 +1,22 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\ResolvedFont;
-use Stilling\Zpl\Font\Typeface;
-use Stilling\Zpl\Font\ZebraFont;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\DiagonalElement;
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\EllipseElement;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Label;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Options;
-use Stilling\Zpl\Pdf\Document;
+use Stilling\ZplRenderer\Font\Encoding;
+use Stilling\ZplRenderer\Font\ResolvedFont;
+use Stilling\ZplRenderer\Font\Typeface;
+use Stilling\ZplRenderer\Font\ZebraFont;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\DiagonalElement;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\EllipseElement;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Label;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\Pdf\Document;
 
 /**
  * Draws labels as vector PDF pages, one page per label copy.

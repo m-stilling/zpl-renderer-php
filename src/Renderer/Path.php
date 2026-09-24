@@ -1,8 +1,8 @@
 <?php
 
-namespace Stilling\Zpl\Renderer;
+namespace Stilling\ZplRenderer\Renderer;
 
-use Stilling\Zpl\Pdf\Document;
+use Stilling\ZplRenderer\Pdf\Document;
 
 /**
  * A filled outline made of one or more closed subpaths. Subpaths that overlap

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stilling\Zpl\Font;
+namespace Stilling\ZplRenderer\Font;
 
 /**
  * A ZPL font request turned into drawing parameters. All lengths are in dots.

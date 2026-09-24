@@ -1,19 +1,19 @@
 <?php
 
-use Stilling\Zpl\Exceptions\ParseException;
-use Stilling\Zpl\Exceptions\UnsupportedException;
-use Stilling\Zpl\Model\BarcodeElement;
-use Stilling\Zpl\Model\BoxElement;
-use Stilling\Zpl\Model\CircleElement;
-use Stilling\Zpl\Model\Element;
-use Stilling\Zpl\Model\ImageElement;
-use Stilling\Zpl\Model\Justification;
-use Stilling\Zpl\Model\Label;
-use Stilling\Zpl\Model\Orientation;
-use Stilling\Zpl\Model\TextElement;
-use Stilling\Zpl\Model\TextJustification;
-use Stilling\Zpl\Options;
-use Stilling\Zpl\Zpl;
+use Stilling\ZplRenderer\Exceptions\ParseException;
+use Stilling\ZplRenderer\Exceptions\UnsupportedException;
+use Stilling\ZplRenderer\Model\BarcodeElement;
+use Stilling\ZplRenderer\Model\BoxElement;
+use Stilling\ZplRenderer\Model\CircleElement;
+use Stilling\ZplRenderer\Model\Element;
+use Stilling\ZplRenderer\Model\ImageElement;
+use Stilling\ZplRenderer\Model\Justification;
+use Stilling\ZplRenderer\Model\Label;
+use Stilling\ZplRenderer\Model\Orientation;
+use Stilling\ZplRenderer\Model\TextElement;
+use Stilling\ZplRenderer\Model\TextJustification;
+use Stilling\ZplRenderer\Options;
+use Stilling\ZplRenderer\Zpl;
 
 function label(string $zpl, ?Options $options = null): Label {
 	$labels = Zpl::parse($zpl, $options);
