@@ -8,7 +8,7 @@ Parse ZPL label code and render it to vector PDF or to PNG, without a printer an
 composer require stilling/zpl
 ```
 
-Requires PHP 8.4 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension with FreeType support; PDF output does not.
+Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension with FreeType support; PDF output does not.
 
 <p align="center"><img src="examples/shipping-label.png" width="406" alt="A shipping label rendered to PNG"></p>
 

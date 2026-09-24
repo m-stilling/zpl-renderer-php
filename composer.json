@@ -15,7 +15,7 @@
 		"source": "https://github.com/m-stilling/zpl-php"
 	},
 	"require": {
-		"php": "^8.4",
+		"php": "^8.3",
 		"ext-mbstring": "*",
 		"ext-zlib": "*",
 		"tecnickcom/tc-lib-barcode": "^2.16"
