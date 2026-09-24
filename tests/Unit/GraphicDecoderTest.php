@@ -70,6 +70,12 @@ test("counts repeats with the lower-case letters in steps of twenty", function (
 	expect(rows($bitmap)[0])->toBe(str_repeat("#", 80));
 });
 
+test("a run that spans rows continues on the next row", function () {
+	$bitmap = (new GraphicDecoder())->decode("KF:", 1, 3);
+
+	expect(rows($bitmap))->toBe(["########", "########", "########"]);
+});
+
 test("decodes :B64: and :Z64: wrapped data", function () {
 	$raw = "\xFF\x00\x81";
 	$decoder = new GraphicDecoder();

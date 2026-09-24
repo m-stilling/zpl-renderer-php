@@ -76,7 +76,9 @@ class GraphicDecoder {
 	 */
 	private function decodeHex(string $data, int $bytesPerRow): string {
 		$nibblesPerRow = $bytesPerRow * 2;
-		$rows = [];
+		/** The complete rows so far, as hex. */
+		$hex = "";
+		/** The row being filled, shorter than a row. */
 		$row = "";
 		$repeat = 0;
 		$length = strlen($data);
@@ -85,7 +87,7 @@ class GraphicDecoder {
 			$char = $data[$i];
 
 			if (ctype_xdigit($char)) {
-				$this->limit(intdiv(count($rows) * $nibblesPerRow + strlen($row) + max(1, $repeat) + 1, 2));
+				$this->limit(intdiv(strlen($hex) + strlen($row) + max(1, $repeat) + 1, 2));
 				$row .= str_repeat(strtoupper($char), max(1, $repeat));
 				$repeat = 0;
 			} elseif ($char >= "G" && $char <= "Y") {
@@ -93,12 +95,12 @@ class GraphicDecoder {
 			} elseif ($char >= "g" && $char <= "z") {
 				$repeat += (ord($char) - ord("g") + 1) * 20;
 			} elseif ($char === "," || $char === "!") {
-				$this->limit((count($rows) + 1) * $bytesPerRow);
+				$this->limit(intdiv(strlen($hex), 2) + $bytesPerRow);
 				$row = str_pad($row, $nibblesPerRow, $char === "," ? "0" : "F");
 				$repeat = 0;
 			} elseif ($char === ":") {
-				$this->limit((count($rows) + 1) * $bytesPerRow);
-				$rows[] = $rows === [] ? str_repeat("0", $nibblesPerRow) : end($rows);
+				$this->limit(intdiv(strlen($hex), 2) + $bytesPerRow);
+				$hex .= $hex === "" ? str_repeat("0", $nibblesPerRow) : substr($hex, -$nibblesPerRow);
 				$row = "";
 				$repeat = 0;
 				continue;
@@ -106,17 +108,17 @@ class GraphicDecoder {
 				continue;
 			}
 
-			while (strlen($row) >= $nibblesPerRow) {
-				$rows[] = substr($row, 0, $nibblesPerRow);
-				$row = substr($row, $nibblesPerRow);
+			$complete = strlen($row) - strlen($row) % $nibblesPerRow;
+
+			if ($complete > 0) {
+				$hex .= substr($row, 0, $complete);
+				$row = substr($row, $complete);
 			}
 		}
 
 		if ($row !== "") {
-			$rows[] = str_pad($row, $nibblesPerRow, "0");
+			$hex .= str_pad($row, $nibblesPerRow, "0");
 		}
-
-		$hex = implode("", $rows);
 
 		return $hex === "" ? "" : (string) hex2bin($hex);
 	}
