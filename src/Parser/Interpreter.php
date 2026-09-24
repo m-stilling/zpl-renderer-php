@@ -690,8 +690,9 @@ class Interpreter {
 		$orientation = $this->orientation($command->arg(0));
 		$magnification = max(1, min(10, $command->int(2, 2)));
 		$defaultLevel = $command->char(3, "Q");
+		$mask = max(0, min(7, $command->int(4, 7)));
 
-		$this->field->barcode = function (string $data) use ($magnification, $defaultLevel, $orientation): Element {
+		$this->field->barcode = function (string $data) use ($magnification, $defaultLevel, $mask, $orientation): Element {
 			$level = $defaultLevel;
 
 			if (preg_match("/^([HQML])([AM]),(.*)$/s", $data, $match) === 1) {
@@ -706,7 +707,7 @@ class Interpreter {
 				$data = substr($data, 2);
 			}
 
-			[$matrix] = $this->barcodes->create("QRCODE,{$level},NL,0,1,0,0,2", $data);
+			[$matrix] = $this->barcodes->create("QRCODE,{$level},NL,0,1,0,0,{$mask}", $data);
 
 			return $this->matrixElement($matrix, $magnification, $magnification, $orientation);
 		};

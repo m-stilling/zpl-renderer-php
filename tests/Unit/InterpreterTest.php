@@ -220,6 +220,15 @@ test("QR field data prefixes select the error correction level and are stripped"
 	expect($prefixed->matrix->toRows())->toBe($plain->matrix->toRows());
 });
 
+test("QR mask parameter selects the mask pattern and defaults to 7", function () {
+	$default = barcode("^XA^FO0,0^BQN,2,4^FDdata^FS^XZ");
+	$seven = barcode("^XA^FO0,0^BQN,2,4,Q,7^FDdata^FS^XZ");
+	$two = barcode("^XA^FO0,0^BQN,2,4,Q,2^FDdata^FS^XZ");
+
+	expect($default->matrix->toRows())->toBe($seven->matrix->toRows())
+		->and($two->matrix->toRows())->not->toBe($seven->matrix->toRows());
+});
+
 test("2D symbols scale by their own magnification", function () {
 	$zpl = "^XA^BY3^FO0,0^BQN,2,5^FDx^FS^FO0,0^BXN,7^FDx^FS^FO0,0^B7N,9^FDx^FS^XZ";
 
