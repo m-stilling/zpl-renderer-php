@@ -2,6 +2,8 @@
 
 namespace Stilling\Zpl;
 
+use Stilling\Zpl\Graphics\GraphicDecoder;
+
 /**
  * Printer and label settings that the ZPL itself does not carry.
  *
@@ -22,6 +24,7 @@ class Options {
 	private bool $honorLabelSize;
 	private bool $honorQuantity;
 	private int $maxPages;
+	private int $maxGraphicBytes;
 	private float $scalableFontCondense;
 	private int $pixelsPerDot;
 	private bool $antialias;
@@ -36,6 +39,7 @@ class Options {
 		bool $honorLabelSize = true,
 		bool $honorQuantity = true,
 		int $maxPages = 1000,
+		int $maxGraphicBytes = GraphicDecoder::DEFAULT_MAX_BYTES,
 		float $scalableFontCondense = 0.887,
 		int $pixelsPerDot = 1,
 		bool $antialias = true,
@@ -53,6 +57,7 @@ class Options {
 			->honorLabelSize($honorLabelSize)
 			->honorQuantity($honorQuantity)
 			->maxPages($maxPages)
+			->maxGraphicBytes($maxGraphicBytes)
 			->scalableFontCondense($scalableFontCondense)
 			->pixelsPerDot($pixelsPerDot)
 			->antialias($antialias)
@@ -156,6 +161,22 @@ class Options {
 
 	public function getMaxPages(): int {
 		return $this->maxPages;
+	}
+
+	/** Upper bound on the size in bytes of one ^GF or ~DG graphic, or of a ~DY graphic in GRF form, so a stray size field cannot exhaust memory. */
+	public function maxGraphicBytes(int $maxGraphicBytes): static {
+		if ($maxGraphicBytes < 1) {
+			throw new \InvalidArgumentException("maxGraphicBytes must be at least 1.");
+		}
+
+		$options = $this->target();
+		$options->maxGraphicBytes = $maxGraphicBytes;
+
+		return $options;
+	}
+
+	public function getMaxGraphicBytes(): int {
+		return $this->maxGraphicBytes;
 	}
 
 	/** Horizontal scale applied to the scalable font 0, relative to the natural width of scalableFontFile. */

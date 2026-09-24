@@ -110,7 +110,7 @@ class Interpreter {
 		private readonly Options $options,
 	) {
 		$this->graphics = new GraphicStore();
-		$this->graphicDecoder = new GraphicDecoder();
+		$this->graphicDecoder = new GraphicDecoder($this->options->getMaxGraphicBytes());
 		$this->barcodes = new BarcodeFactory();
 		$this->code128 = new Code128();
 		$this->font = new FontSpec(ZebraFont::DEFAULT_FONT, 9, 5);

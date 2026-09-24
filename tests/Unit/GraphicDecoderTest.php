@@ -84,6 +84,27 @@ test("rejects invalid base64", function (string $data) {
 	(new GraphicDecoder())->decode($data, 1, 1);
 })->with([":B64:@@@@:0000", ":B64:A:0000", ":Z64:AAAA:0000"])->throws(ParseException::class);
 
+test("rejects a graphic larger than the byte limit", function (string $data, int $bytesPerRow, int $total) {
+	(new GraphicDecoder(16))->decode($data, $bytesPerRow, $total);
+})->with([
+	"total byte count" => ["FF", 1, 17],
+	"bytes per row" => ["FF", 17, 0],
+	"plain hex" => [str_repeat("FF", 17), 1, 0],
+	"run length" => ["zzzzF", 1, 0],
+	"repeated rows" => ["FF" . str_repeat(":", 16), 1, 0],
+	"filled rows" => [str_repeat("!", 17), 1, 0],
+	":B64:" => [":B64:" . base64_encode(str_repeat("\0", 17)) . ":0000", 1, 0],
+	":Z64:" => [":Z64:" . base64_encode((string) gzcompress(str_repeat("\0", 1000))) . ":0000", 1, 0],
+])->throws(ParseException::class);
+
+test("accepts a graphic at the byte limit", function () {
+	$decoder = new GraphicDecoder(16);
+
+	expect($decoder->decode(str_repeat("FF", 16), 1, 16)->height)->toBe(16)
+		->and($decoder->decode("FF" . str_repeat(":", 15), 1, 0)->height)->toBe(16)
+		->and($decoder->decode(":Z64:" . base64_encode((string) gzcompress(str_repeat("\0", 16))) . ":0000", 1, 0)->height)->toBe(16);
+});
+
 test("graphic names ignore device, extension and case", function () {
 	expect(GraphicStore::normalize("R:LOGO.GRF"))->toBe("LOGO")
 		->and(GraphicStore::normalize("logo"))->toBe("LOGO")

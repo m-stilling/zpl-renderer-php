@@ -7,13 +7,29 @@ use Stilling\Zpl\Exceptions\ParseException;
 /**
  * Decodes the data part of ~DG and ^GF: plain hex, Zebra run-length compressed
  * hex, or :B64: / :Z64: wrapped binary.
+ *
+ * A graphic larger than maxBytes is rejected, whether the size comes from the
+ * total byte count, the bytes per row, the data itself or its expansion.
  */
 class GraphicDecoder {
+	/** 8 MiB, enough for a 20 by 30 cm label at 24 dots per millimeter. */
+	public const int DEFAULT_MAX_BYTES = 8388608;
+
+	public function __construct(
+		private readonly int $maxBytes = self::DEFAULT_MAX_BYTES,
+	) {
+		if ($maxBytes < 1) {
+			throw new \InvalidArgumentException("maxBytes must be at least 1.");
+		}
+	}
+
 	public function decode(string $data, int $bytesPerRow, int $totalBytes): Bitmap {
 		if ($bytesPerRow < 1) {
 			throw new ParseException("Graphic data needs a positive bytes-per-row value.");
 		}
 
+		$this->limit($bytesPerRow);
+		$this->limit($totalBytes);
 		$data = trim($data);
 
 		if (preg_match('/^:([BZ])64:(.*?)(?::([0-9A-Fa-f]{4}))?$/s', $data, $match) === 1) {
@@ -44,8 +60,11 @@ class GraphicDecoder {
 		}
 
 		if ($kind === "Z") {
-			return Silencer::call(fn () => gzuncompress($binary)) ?? throw new ParseException("Invalid zlib graphic data.");
+			$binary = Silencer::call(fn () => gzuncompress($binary, $this->maxBytes + 1))
+				?? throw new ParseException("Invalid zlib graphic data, or more than {$this->maxBytes} bytes of it.");
 		}
+
+		$this->limit(strlen($binary));
 
 		return $binary;
 	}
@@ -66,6 +85,7 @@ class GraphicDecoder {
 			$char = $data[$i];
 
 			if (ctype_xdigit($char)) {
+				$this->limit(intdiv(count($rows) * $nibblesPerRow + strlen($row) + max(1, $repeat) + 1, 2));
 				$row .= str_repeat(strtoupper($char), max(1, $repeat));
 				$repeat = 0;
 			} elseif ($char >= "G" && $char <= "Y") {
@@ -73,9 +93,11 @@ class GraphicDecoder {
 			} elseif ($char >= "g" && $char <= "z") {
 				$repeat += (ord($char) - ord("g") + 1) * 20;
 			} elseif ($char === "," || $char === "!") {
+				$this->limit((count($rows) + 1) * $bytesPerRow);
 				$row = str_pad($row, $nibblesPerRow, $char === "," ? "0" : "F");
 				$repeat = 0;
 			} elseif ($char === ":") {
+				$this->limit((count($rows) + 1) * $bytesPerRow);
 				$rows[] = $rows === [] ? str_repeat("0", $nibblesPerRow) : end($rows);
 				$row = "";
 				$repeat = 0;
@@ -97,5 +119,11 @@ class GraphicDecoder {
 		$hex = implode("", $rows);
 
 		return $hex === "" ? "" : (string) hex2bin($hex);
+	}
+
+	private function limit(int $bytes): void {
+		if ($bytes > $this->maxBytes) {
+			throw new ParseException("The graphic needs {$bytes} bytes, more than the limit of {$this->maxBytes} bytes.");
+		}
 	}
 }
