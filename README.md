@@ -97,8 +97,8 @@ file_put_contents('label.png', Zpl::toPng($zpl, $options));
 | Option | Default | Effect |
 | --- | --- | --- |
 | `dpmm` | `8` | Print density in dots per millimeter: 6, 8, 12 or 24. |
-| `widthMm` | `101.6` | Label width. `^PW` in the label overrides it. |
-| `heightMm` | `152.4` | Label height. `^LL` in the label overrides it. |
+| `widthMm` | `101.6` | Label width. `^PW` overrides it for its label and the labels after it. |
+| `heightMm` | `152.4` | Label height. `^LL` overrides it for its label and the labels after it. |
 | `honorLabelSize` | `true` | Let `^PW` and `^LL` change the page size. |
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
 | `maxPages` | `1000` | Upper bound on pages per PDF. |

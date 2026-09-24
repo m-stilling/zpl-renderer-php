@@ -104,6 +104,8 @@ class Interpreter {
 		$this->code128 = new Code128();
 		$this->font = new FontSpec(ZebraFont::DEFAULT_FONT, 9, 5);
 		$this->field = new FieldState();
+		$this->labelWidth = $this->options->widthDots();
+		$this->labelHeight = $this->options->heightDots();
 	}
 
 	/**
@@ -199,8 +201,6 @@ class Interpreter {
 	}
 
 	private function resetLabel(): void {
-		$this->labelWidth = $this->options->widthDots();
-		$this->labelHeight = $this->options->heightDots();
 		$this->homeX = 0;
 		$this->homeY = 0;
 		$this->labelTop = 0;

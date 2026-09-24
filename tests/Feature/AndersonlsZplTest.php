@@ -45,6 +45,16 @@ describe("units and resolution", function () {
 		expect([$label->width, $label->height])->toBe([799, 400]);
 	});
 
+	test("the page size carries over to the pages that newPage starts", function () {
+		$builder = new ZplBuilder(Unit::MM);
+		$builder->setPageSize(50, 100);
+		$builder->newPage();
+
+		$sizes = array_map(fn ($label): array => [$label->width, $label->height], builderLabels($builder->toZpl()));
+
+		expect($sizes)->toBe([[799, 400], [799, 400]]);
+	});
+
 	test("setWidth and setHeight each set one side", function () {
 		$builder = new ZplBuilder();
 		$builder->setWidth(600);

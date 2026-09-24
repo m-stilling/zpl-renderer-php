@@ -56,6 +56,13 @@ test("the page size comes from the options unless ^PW and ^LL override it", func
 		->and(label("^XA^PW300^LL150^XZ", $fixed)->width)->toBe(400);
 });
 
+test("^PW and ^LL stay in effect for the labels that follow", function () {
+	$labels = Zpl::parse("^XA^PW300^LL150^XZ^XA^XZ^XA^PW500^XZ^XA^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
+	$sizes = array_map(fn (Label $label): array => [$label->width, $label->height], $labels);
+
+	expect($sizes)->toBe([[300, 150], [300, 150], [500, 150], [500, 150]]);
+});
+
 test("every ^XA ^XZ pair is one label and text outside is ignored", function () {
 	expect(Zpl::parse("noise^XA^FDa^FS^XZ more ^XA^FDb^FS^XZ"))->toHaveCount(2);
 });
