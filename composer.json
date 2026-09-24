@@ -11,8 +11,8 @@
 		}
 	],
 	"support": {
-		"issues": "https://github.com/m-stilling/zpl-php/issues",
-		"source": "https://github.com/m-stilling/zpl-php"
+		"issues": "https://github.com/m-stilling/zpl-renderer-php/issues",
+		"source": "https://github.com/m-stilling/zpl-renderer-php"
 	},
 	"require": {
 		"php": "^8.3",
