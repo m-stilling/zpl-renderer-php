@@ -27,14 +27,14 @@ class PdfRenderer {
 	public function __construct(
 		private readonly Options $options,
 	) {
-		$this->document = new Document();
+		$this->document = new Document($this->options->monoFontFile, $this->options->monoBoldFontFile);
 	}
 
 	/**
 	 * @param list<Label> $labels
 	 */
 	public function render(array $labels): string {
-		$this->document = new Document();
+		$this->document = new Document($this->options->monoFontFile, $this->options->monoBoldFontFile);
 
 		foreach ($labels as $label) {
 			$content = $this->renderLabel($label);
@@ -118,10 +118,11 @@ class PdfRenderer {
 
 	private function textLine(ResolvedFont $font, string $winAnsi, float $x, float $baseline, float $wordSpacing = 0.0): string {
 		$resource = match ($font->pdfFont) {
-			FontMetrics::COURIER_BOLD => Document::FONT_COURIER_BOLD,
-			FontMetrics::COURIER => Document::FONT_COURIER,
-			default => Document::FONT_HELVETICA_BOLD,
+			FontMetrics::MONO_BOLD => Document::FONT_MONO_BOLD,
+			FontMetrics::MONO => Document::FONT_MONO,
+			default => Document::FONT_SCALABLE,
 		};
+		$this->document->useFont($resource);
 		$size = Document::number($font->size);
 		$scale = Document::number($font->horizontalScale * 100);
 		$spacing = $wordSpacing > 0 ? Document::number($wordSpacing / $font->horizontalScale) . " Tw " : "";

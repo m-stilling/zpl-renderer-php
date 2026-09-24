@@ -134,6 +134,21 @@ test("images are image masks drawn top-down", function () {
 		->and(contentStreams($pdf))->toContain("q 8 0 0 -2 0 2 cm /Im1 Do Q");
 });
 
+test("the fixed-pitch fonts are embedded only when a page uses them", function () {
+	$scalableOnly = Zpl::toPdf("^XA^FO0,0^A0N,20,20^FDx^FS^XZ");
+	$mono = Zpl::toPdf("^XA^FO0,0^AAN,9,5^FDx^FS^XZ");
+	$monoBold = Zpl::toPdf("^XA^FO0,0^ABN,11,7^FDx^FS^XZ");
+
+	expect($scalableOnly)->not->toContain("/FontFile2")
+		->and($scalableOnly)->toContain("/BaseFont /Helvetica-Bold")
+		->and($mono)->toContain("/Subtype /TrueType /BaseFont /RobotoMono-Regular")
+		->and($mono)->toContain("/FontFile2")
+		->and($mono)->toContain("/Flags 33 ")
+		->and($mono)->not->toContain("RobotoMono-Bold")
+		->and($monoBold)->toContain("/BaseFont /RobotoMono-Bold")
+		->and(strlen($mono))->toBeGreaterThan(50000);
+});
+
 test("barcodes are rectangles in dots with the interpretation line below", function () {
 	$content = contentStreams(Zpl::toPdf("^XA^BY2^FO0,0^BCN,50,Y,N,N^FDA^FS^XZ"));
 

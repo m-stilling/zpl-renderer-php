@@ -242,7 +242,7 @@ class PngRenderer {
 		if (!isset(self::$capHeights[$file])) {
 			$box = imagettfbbox(75, 0, $file, "H");
 			$cap = $box === false ? 0 : ($box[1] - $box[7]) / 100;
-			self::$capHeights[$file] = $cap > 0 ? $cap : FontMetrics::CAP_HEIGHT[FontMetrics::HELVETICA_BOLD];
+			self::$capHeights[$file] = $cap > 0 ? $cap : FontMetrics::CAP_HEIGHT[FontMetrics::SCALABLE];
 		}
 
 		return self::$capHeights[$file];
@@ -320,8 +320,8 @@ class PngRenderer {
 
 	private function fontFile(ResolvedFont $font): string {
 		$file = match ($font->pdfFont) {
-			FontMetrics::COURIER_BOLD => $this->options->monoBoldFontFile,
-			FontMetrics::COURIER => $this->options->monoFontFile,
+			FontMetrics::MONO_BOLD => $this->options->monoBoldFontFile,
+			FontMetrics::MONO => $this->options->monoFontFile,
 			default => $this->options->scalableFontFile,
 		};
 

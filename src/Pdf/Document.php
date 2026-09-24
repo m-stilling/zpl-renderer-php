@@ -5,15 +5,18 @@ namespace Stilling\Zpl\Pdf;
 use Stilling\Zpl\Graphics\Bitmap;
 
 /**
- * A minimal PDF writer: pages with content streams, the two core fonts, an
- * extended graphics state for reverse printing, and one-bit image masks.
+ * A minimal PDF writer: pages with content streams, the fonts, an extended
+ * graphics state for reverse printing, and one-bit image masks.
+ *
+ * The scalable font is the core Helvetica-Bold. The fixed-pitch fonts are
+ * TrueType files embedded in full when a page uses them.
  */
 class Document {
-	public const string FONT_HELVETICA_BOLD = "F1";
+	public const string FONT_SCALABLE = "F1";
 
-	public const string FONT_COURIER_BOLD = "F2";
+	public const string FONT_MONO_BOLD = "F2";
 
-	public const string FONT_COURIER = "F3";
+	public const string FONT_MONO = "F3";
 
 	/** Graphics state name that paints with the Difference blend mode, used for ^FR. */
 	public const string REVERSE_STATE = "GSr";
@@ -27,13 +30,28 @@ class Document {
 	/** @var array<string, int> image resource name => object number */
 	private array $images = [];
 
+	/** @var array<string, true> font resource names any page uses */
+	private array $usedFonts = [];
+
 	private int $resourcesId;
 
 	private int $pagesId;
 
-	public function __construct() {
+	public function __construct(
+		/** TrueType file for the fixed-pitch font. */
+		private readonly string $monoFontFile,
+		/** TrueType file for the bold fixed-pitch font. */
+		private readonly string $monoBoldFontFile,
+	) {
 		$this->pagesId = $this->reserve();
 		$this->resourcesId = $this->reserve();
+	}
+
+	/**
+	 * Note that a page draws with a font, so the font gets embedded.
+	 */
+	public function useFont(string $resource): void {
+		$this->usedFonts[$resource] = true;
 	}
 
 	/**
@@ -66,11 +84,19 @@ class Document {
 	}
 
 	public function render(): string {
-		$helvetica = $this->add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
-		$courierBold = $this->add("<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>");
-		$courier = $this->add("<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>");
-		$reverse = $this->add("<< /Type /ExtGState /BM /Difference >>");
+		$fonts = " /" . self::FONT_SCALABLE . " " . $this->add(
+			"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+		) . " 0 R";
 
+		if (isset($this->usedFonts[self::FONT_MONO])) {
+			$fonts .= " /" . self::FONT_MONO . " " . $this->addTrueType($this->monoFontFile) . " 0 R";
+		}
+
+		if (isset($this->usedFonts[self::FONT_MONO_BOLD])) {
+			$fonts .= " /" . self::FONT_MONO_BOLD . " " . $this->addTrueType($this->monoBoldFontFile) . " 0 R";
+		}
+
+		$reverse = $this->add("<< /Type /ExtGState /BM /Difference >>");
 		$xobjects = "";
 
 		foreach ($this->images as $name => $id) {
@@ -78,8 +104,7 @@ class Document {
 		}
 
 		$this->objects[$this->resourcesId] = "<< /ProcSet [/PDF /Text /ImageB]"
-			. " /Font << /" . self::FONT_HELVETICA_BOLD . " {$helvetica} 0 R"
-			. " /" . self::FONT_COURIER_BOLD . " {$courierBold} 0 R /" . self::FONT_COURIER . " {$courier} 0 R >>"
+			. " /Font <<{$fonts} >>"
 			. " /ExtGState << /" . self::REVERSE_STATE . " {$reverse} 0 R >>"
 			. " /XObject <<{$xobjects} >> >>";
 
@@ -108,6 +133,30 @@ class Document {
 		$output .= "trailer\n<< /Size {$count} /Root {$catalog} 0 R /Info {$info} 0 R >>\nstartxref\n{$xref}\n%%EOF\n";
 
 		return $output;
+	}
+
+	/**
+	 * Embed a TrueType file and return the object number of its font dictionary.
+	 */
+	private function addTrueType(string $file): int {
+		$font = new TrueTypeFont($file);
+		$program = $this->add(
+			"<< /Length1 " . strlen($font->data) . " /Filter /FlateDecode /Length %d >>",
+			self::deflate($font->data),
+		);
+		$bbox = implode(" ", $font->bbox);
+		$descriptor = $this->add(
+			"<< /Type /FontDescriptor /FontName /{$font->postScriptName} /Flags " . $font->flags()
+			. " /FontBBox [{$bbox}] /ItalicAngle " . self::number($font->italicAngle)
+			. " /Ascent {$font->ascent} /Descent {$font->descent} /CapHeight {$font->capHeight}"
+			. " /StemV " . ($font->bold ? 120 : 80) . " /FontFile2 {$program} 0 R >>",
+		);
+		$widths = implode(" ", $font->widths);
+
+		return $this->add(
+			"<< /Type /Font /Subtype /TrueType /BaseFont /{$font->postScriptName} /FirstChar 32 /LastChar 255"
+			. " /Widths [{$widths}] /Encoding /WinAnsiEncoding /FontDescriptor {$descriptor} 0 R >>",
+		);
 	}
 
 	/**

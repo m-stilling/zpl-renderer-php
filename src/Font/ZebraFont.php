@@ -69,7 +69,7 @@ class ZebraFont {
 		$width = $spec->width > 0 ? $spec->width : $height;
 
 		return new ResolvedFont(
-			pdfFont: FontMetrics::HELVETICA_BOLD,
+			pdfFont: FontMetrics::SCALABLE,
 			size: $height * self::SCALABLE_SIZE,
 			horizontalScale: $condense * $width / $height / self::SCALABLE_SIZE,
 			ascent: $height * self::SCALABLE_ASCENT,
@@ -84,7 +84,7 @@ class ZebraFont {
 		$scaleX = $width > 0 ? max(1, (int) round($width / $baseWidth)) : $scaleY;
 		$cellHeight = $baseHeight * $scaleY;
 		$advance = ($baseWidth + $gap) * $scaleX;
-		$font = $id === "B" ? FontMetrics::COURIER_BOLD : FontMetrics::COURIER;
+		$font = $id === "B" ? FontMetrics::MONO_BOLD : FontMetrics::MONO;
 		$capHeight = $cellHeight * self::BITMAP_CAP_FRACTION;
 		$size = $capHeight / FontMetrics::CAP_HEIGHT[$font];
 

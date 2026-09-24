@@ -3,22 +3,29 @@
 namespace Stilling\Zpl\Font;
 
 /**
- * Advance widths of the PDF core fonts this package draws with, in 1/1000 em,
- * indexed by WinAnsi code.
+ * Advance widths of the fonts this package draws with, in 1/1000 em, indexed
+ * by WinAnsi code. The scalable font uses the Helvetica-Bold metrics; the
+ * fixed-pitch fonts advance 600 for every character, like Roboto Mono and Courier.
  */
 class FontMetrics {
-	public const string HELVETICA_BOLD = "Helvetica-Bold";
+	/** Helvetica-Bold, the PDF core font drawn for the scalable font 0. */
+	public const string SCALABLE = "scalable";
 
-	public const string COURIER_BOLD = "Courier-Bold";
+	/** The fixed-pitch font drawn for the bitmap fonts A and C to H. */
+	public const string MONO = "mono";
 
-	public const string COURIER = "Courier";
+	/** The bold fixed-pitch font drawn for the bitmap font B. */
+	public const string MONO_BOLD = "mono-bold";
 
 	/** Cap height in em for each font. */
 	public const array CAP_HEIGHT = [
-		self::HELVETICA_BOLD => 0.718,
-		self::COURIER_BOLD => 0.562,
-		self::COURIER => 0.562,
+		self::SCALABLE => 0.718,
+		self::MONO => 0.71,
+		self::MONO_BOLD => 0.71,
 	];
+
+	/** Advance of every character of the fixed-pitch fonts, in 1/1000 em. */
+	public const int MONO_ADVANCE = 600;
 
 	/** @var array<int, int> */
 	private const array HELVETICA_BOLD_WIDTHS = [
@@ -52,8 +59,8 @@ class FontMetrics {
 	 * Advance width of one WinAnsi character in 1/1000 em.
 	 */
 	public static function charWidth(string $font, int $code): int {
-		if ($font === self::COURIER_BOLD || $font === self::COURIER) {
-			return 600;
+		if ($font === self::MONO || $font === self::MONO_BOLD) {
+			return self::MONO_ADVANCE;
 		}
 
 		return self::HELVETICA_BOLD_WIDTHS[$code] ?? 556;

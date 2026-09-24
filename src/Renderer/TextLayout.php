@@ -12,6 +12,9 @@ use Stilling\Zpl\Model\TextJustification;
  * of the text at (0, 0).
  */
 class TextLayout {
+	/** Slack in dots so that a word measuring exactly the block width still fits despite float rounding. */
+	private const float TOLERANCE = 0.001;
+
 	/**
 	 * @param list<Line> $lines
 	 */
@@ -98,6 +101,7 @@ class TextLayout {
 	private static function wrap(string $paragraph, ResolvedFont $font, int $width, int $hangingIndent): array {
 		$lines = [];
 		$current = "";
+		$width += self::TOLERANCE;
 
 		foreach (explode(" ", $paragraph) as $word) {
 			$available = $width - ($lines === [] ? 0 : $hangingIndent);

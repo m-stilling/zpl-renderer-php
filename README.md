@@ -79,9 +79,9 @@ Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^B
 
 ## Fonts
 
-The PDF uses the core fonts every viewer has: Helvetica-Bold, condensed to the width of CG Triumvirate Bold Condensed, for font 0, and Courier at the cell size and pitch of the bitmap fonts for A to H. Nothing is embedded, so a label PDF is a few kilobytes.
+Font 0 is drawn with Helvetica-Bold in the PDF, condensed to the width of CG Triumvirate Bold Condensed, and with [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold in the PNG. Nothing is embedded for it, so a PDF with only font 0 text is a few kilobytes.
 
-The PNG draws with TrueType fonts through GD. The package ships [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold for font 0 and [Roboto Mono](https://github.com/googlefonts/robotomono) for A to H, in `resources/fonts` with their licenses. Both renderers lay text out with the same metrics, so words start and end at the same dots in the PDF and in the PNG. Point the font file options at other TrueType files to draw with different glyphs.
+Fonts A to H are drawn with [Roboto Mono](https://github.com/googlefonts/robotomono) in both outputs, at the cell size and pitch of the printer bitmap fonts. The PDF embeds the font file when a page uses it, which adds about 70 KB per weight. The font files sit in `resources/fonts` with their licenses. Both renderers lay text out with the same metrics, so words start and end at the same dots in the PDF and in the PNG. Point the `monoFontFile` and `monoBoldFontFile` options at other TrueType files to draw with different glyphs in both outputs; `scalableFontFile` changes the PNG only.
 
 ## Differences from a printer
 
