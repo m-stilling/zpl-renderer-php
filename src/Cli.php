@@ -12,11 +12,11 @@ class Cli {
 		Usage: zpl <input> <format> [output] [options]
 
 		  input     Path to a ZPL file, or - for standard input.
-		  format    Output format: pdf or png
+		  format    Output format: pdf, png or svg
 		  output    Path to write. Defaults to the input name with the new
 		            extension, or standard output when the input is -.
-		            A PNG is one image per label; with several labels the
-		            files are numbered: name-1.png, name-2.png, ...
+		            A PNG or an SVG is one image per label; with several labels
+		            the files are numbered: name-1.png, name-2.png, ...
 
 		Options:
 		  --dpmm=<6|8|12|24>   Print density in dots per millimeter (default 8)
@@ -65,8 +65,8 @@ class Cli {
 		$format = strtolower($format);
 		$output = $positional[2] ?? null;
 
-		if ($format !== "pdf" && $format !== "png") {
-			fwrite($stderr, "Unsupported format \"{$format}\". Supported: pdf, png\n");
+		if (!in_array($format, ["pdf", "png", "svg"], true)) {
+			fwrite($stderr, "Unsupported format \"{$format}\". Supported: pdf, png, svg\n");
 
 			return 64;
 		}
@@ -96,7 +96,11 @@ class Cli {
 		}
 
 		try {
-			$outputs = $format === "pdf" ? [ZplRenderer::toPdf($zpl, $options)] : ZplRenderer::toPngs($zpl, $options);
+			$outputs = match ($format) {
+				"pdf" => [ZplRenderer::toPdf($zpl, $options)],
+				"png" => ZplRenderer::toPngs($zpl, $options),
+				default => ZplRenderer::toSvgs($zpl, $options),
+			};
 		} catch (\Throwable $exception) {
 			fwrite($stderr, "Error: " . $exception->getMessage() . "\n");
 

@@ -2,13 +2,13 @@
 
 [![tests](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml) [![Packagist Version](https://img.shields.io/packagist/v/stilling/zpl-renderer)](https://packagist.org/packages/stilling/zpl-renderer)
 
-Parse ZPL label code and render it to vector PDF or to PNG, without a printer and without an online service. One `^XA ... ^XZ` format becomes one PDF page or one PNG image. In the PDF, text stays text and bars, boxes and barcodes stay vector shapes, so the output is sharp at every zoom level.
+Parse ZPL label code and render it to vector PDF, to SVG or to PNG, without a printer and without an online service. One `^XA ... ^XZ` format becomes one PDF page, one SVG image or one PNG image. In the PDF and the SVG, bars, boxes and barcodes stay vector shapes, so the output is sharp at every zoom level. In the PDF, text stays text. In the SVG, text is drawn as glyph outlines, so the image needs no font.
 
 ```
 composer require stilling/zpl-renderer
 ```
 
-Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension; PDF output does not.
+Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension; PDF and SVG output do not.
 
 <table>
 <tr>
@@ -34,10 +34,13 @@ $options = new Options(dpmm: 8, widthMm: 101.6, heightMm: 152.4);
 $options = (new Options())->dpmm(8)->widthMm(101.6)->heightMm(152.4);
 
 file_put_contents('label.pdf', ZplRenderer::toPdf($zpl, $options));
+file_put_contents('label.svg', ZplRenderer::toSvg($zpl, $options));
 file_put_contents('label.png', ZplRenderer::toPng($zpl, $options));
 ```
 
 - `ZplRenderer::toPdf()` returns one PDF with a page per label, and a page per copy when `^PQ` asks for more.
+- `ZplRenderer::toSvg()` returns one SVG. The third argument picks the label when the input holds several, counted from 0.
+- `ZplRenderer::toSvgs()` returns a list with one SVG per label.
 - `ZplRenderer::toPng()` returns one PNG. The third argument picks the label when the input holds several, counted from 0.
 - `ZplRenderer::toPngs()` returns a list with one PNG per label.
 - `ZplRenderer::parse()` returns the interpreted labels as a list of `Label` objects with their elements, for example to feed a different renderer.
@@ -134,12 +137,13 @@ The package installs a `zpl` command in `vendor/bin`.
 
 ```
 vendor/bin/zpl label.zpl pdf
+vendor/bin/zpl label.zpl svg
 vendor/bin/zpl label.zpl png --scale=2
 vendor/bin/zpl label.zpl pdf out/label.pdf --size=4x6 --dpmm=8
 cat label.zpl | vendor/bin/zpl - png > label.png
 ```
 
-Without an output path the file is written next to the input with the new extension. A PNG is one image per label; when the input holds several labels the files are numbered `name-1.png`, `name-2.png` and so on. An existing file is only replaced with `--overwrite`. Run `vendor/bin/zpl --help` for all options.
+Without an output path the file is written next to the input with the new extension. A PNG or an SVG is one image per label; when the input holds several labels the files are numbered `name-1.png`, `name-2.png` and so on. An existing file is only replaced with `--overwrite`. Run `vendor/bin/zpl --help` for all options.
 
 ## Supported commands
 
@@ -198,7 +202,7 @@ Unknown commands are ignored, like the printer ignores them. `^BB` Codablock, `^
 
 Font 0 is drawn with [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold, at the width of CG Triumvirate Bold Condensed. Fonts A to H are drawn with [Roboto Mono](https://github.com/googlefonts/robotomono), at the cell size and pitch of the printer bitmap fonts. The font files sit in `resources/fonts` with their licenses.
 
-The PDF and the PNG draw the same glyphs from the same font files, at the same positions. The PDF embeds only the characters that the document draws, so a font adds a few kilobytes. The PNG puts every character on a whole pixel, so the same character has the same pixels wherever it appears. Text edges in the PNG are smoothed with gray pixels; shapes, barcodes and images stay black and white, dot for dot. Set `antialias: false` to get black and white text, like the printer prints it.
+The PDF, the SVG and the PNG draw the same glyphs from the same font files, at the same positions. The PDF embeds only the characters that the document draws, so a font adds a few kilobytes. The SVG defines the outline of each character once and reuses it wherever the character appears. The PNG puts every character on a whole pixel, so the same character has the same pixels wherever it appears. Text edges in the PNG are smoothed with gray pixels; shapes, barcodes and images stay black and white, dot for dot. Set `antialias: false` to get black and white text, like the printer prints it.
 
 Point the `scalableFontFile`, `monoFontFile` and `monoBoldFontFile` options at other TrueType files to draw with different glyphs. The file must have TrueType outlines (a `glyf` table). Set `scalableFontCondense` to the horizontal scale that gives the new font 0 file the width of the printer font.
 
@@ -206,13 +210,13 @@ Point the `scalableFontFile`, `monoFontFile` and `monoBoldFontFile` options at o
 
 - The wide-to-narrow ratio in `^BY` is ignored; Code 39, Interleaved 2 of 5, Codabar and MSI use a ratio of 3.
 - EAN and UPC interpretation lines are printed as one centered line, not split around the guard bars.
-- Reverse fields (`^FR`, `^LR`) in the PDF use the `Difference` blend mode. Every current viewer supports it.
+- Reverse fields (`^FR`, `^LR`) in the PDF use the `Difference` blend mode. Every current viewer supports it. In the SVG they use `mix-blend-mode: difference`. Browsers support it. A viewer without blend modes draws the field white.
 - Text outside Windows-1252 is printed as `?`.
 - `^MU` unit conversion, `^GS` symbols and binary `^GF` data are not supported.
 
 ## Examples
 
-The [examples](examples) folder holds sample labels: a shipping label, every barcode type, shapes and fonts, graphics, and a stored format with `^FN` fields. The rendered PDF and PNG of each one sit next to it. Render them again with:
+The [examples](examples) folder holds sample labels: a shipping label, every barcode type, shapes and fonts, graphics, and a stored format with `^FN` fields. The rendered PDF, SVG and PNG of each one sit next to it. Render them again with:
 
 ```
 composer examples

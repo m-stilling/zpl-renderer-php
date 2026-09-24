@@ -111,6 +111,23 @@ test("writes one PNG per label, numbered when there are several", function () {
 		->and(file_exists(cliDir() . "/two.png"))->toBeFalse();
 });
 
+test("writes one SVG per label, numbered when there are several", function () {
+	file_put_contents(cliDir() . "/two.zpl", "^XA^PW10^LL10^XZ^XA^PW20^LL20^XZ");
+
+	[$single] = runCli([cliDir() . "/label.zpl", "svg"]);
+	[$double, , $stderr] = runCli([cliDir() . "/two.zpl", "svg"]);
+	[$stdout, $out] = runCli([cliDir() . "/label.zpl", "SVG", "-"]);
+
+	expect($single)->toBe(0)
+		->and((string) file_get_contents(cliDir() . "/label.svg"))->toContain('viewBox="0 0 813 1219"')
+		->and($double)->toBe(0)
+		->and($stderr)->toContain("two-1.svg")
+		->and((string) file_get_contents(cliDir() . "/two-2.svg"))->toContain('viewBox="0 0 20 20"')
+		->and(file_exists(cliDir() . "/two.svg"))->toBeFalse()
+		->and($stdout)->toBe(0)
+		->and($out)->toStartWith("<?xml");
+});
+
 test("tells when the input is a PDF, a PNG or another binary file", function () {
 	file_put_contents(cliDir() . "/a.pdf", "%PDF-1.4 ^XA^\x80\x30^XZ");
 	file_put_contents(cliDir() . "/a.png", "\x89PNG\r\n");
@@ -129,7 +146,7 @@ test("tells when the input is a PDF, a PNG or another binary file", function () 
 });
 
 test("rejects an unknown format and a missing input", function () {
-	[$format, , $formatError] = runCli([cliDir() . "/label.zpl", "svg"]);
+	[$format, , $formatError] = runCli([cliDir() . "/label.zpl", "gif"]);
 	[$missing] = runCli([cliDir() . "/nope.zpl", "pdf"]);
 
 	expect($format)->toBe(64)

@@ -2,8 +2,8 @@
 <?php
 
 /*
- * Render every .zpl file in this folder to a .pdf and a .png next to it.
- * A file with several labels gets one PNG per label: name-1.png, name-2.png, ...
+ * Render every .zpl file in this folder to a .pdf, a .svg and a .png next to it.
+ * A file with several labels gets one SVG and one PNG per label: name-1.png, name-2.png, ...
  *
  * Run it with:  composer examples
  */
@@ -19,11 +19,11 @@ foreach (glob(__DIR__ . "/*.zpl") ?: [] as $file) {
 	file_put_contents("{$base}.pdf", ZplRenderer::toPdf($zpl));
 	echo basename($base), ".pdf\n";
 
-	$pngs = ZplRenderer::toPngs($zpl);
-
-	foreach ($pngs as $index => $png) {
-		$output = count($pngs) === 1 ? "{$base}.png" : "{$base}-" . ($index + 1) . ".png";
-		file_put_contents($output, $png);
-		echo basename($output), "\n";
+	foreach (["svg" => ZplRenderer::toSvgs($zpl), "png" => ZplRenderer::toPngs($zpl)] as $extension => $images) {
+		foreach ($images as $index => $image) {
+			$output = count($images) === 1 ? "{$base}.{$extension}" : "{$base}-" . ($index + 1) . ".{$extension}";
+			file_put_contents($output, $image);
+			echo basename($output), "\n";
+		}
 	}
 }

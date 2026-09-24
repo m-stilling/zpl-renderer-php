@@ -100,6 +100,24 @@ class Path {
 	}
 
 	/**
+	 * The SVG path data of every subpath.
+	 */
+	public function toSvg(): string {
+		$n = Document::number(...);
+		$out = "";
+
+		foreach ($this->subpaths as $subpath) {
+			foreach ($subpath as $index => $point) {
+				$out .= ($index === 0 ? "M" : (count($point) === 6 ? "C" : "L")) . implode(" ", array_map($n, $point));
+			}
+
+			$out .= "Z";
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Every subpath as a polygon, with curves broken into straight segments.
 	 *
 	 * @return list<list<array{float, float}>>

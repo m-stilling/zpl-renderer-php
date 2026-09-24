@@ -54,7 +54,7 @@ function pngBytes(GdImage $image): string {
 }
 
 /**
- * Parse the ZPL and check that every label renders to PDF and PNG.
+ * Parse the ZPL and check that every label renders to PDF, PNG and SVG.
  *
  * @return list<Stilling\ZplRenderer\Model\Label>
  */
@@ -62,7 +62,8 @@ function builderLabels(string $zpl): array {
 	$labels = Stilling\ZplRenderer\ZplRenderer::parse($zpl);
 
 	expect(Stilling\ZplRenderer\ZplRenderer::toPdf($zpl))->toStartWith("%PDF-")
-		->and(Stilling\ZplRenderer\ZplRenderer::toPngs($zpl))->toHaveCount(count($labels));
+		->and(Stilling\ZplRenderer\ZplRenderer::toPngs($zpl))->toHaveCount(count($labels))
+		->and(Stilling\ZplRenderer\ZplRenderer::toSvgs($zpl))->toHaveCount(count($labels));
 
 	return $labels;
 }

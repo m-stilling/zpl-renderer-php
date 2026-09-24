@@ -1,8 +1,8 @@
 {
 	"$schema": "https://getcomposer.org/schema.json",
 	"name": "stilling/zpl-renderer",
-	"description": "Parse and render ZPL label code to vector PDF or PNG, without a printer or an online service.",
-	"keywords": ["zpl", "zebra", "pdf", "png", "label", "barcode"],
+	"description": "Parse and render ZPL label code to vector PDF, SVG or PNG, without a printer or an online service.",
+	"keywords": ["zpl", "zebra", "pdf", "svg", "png", "label", "barcode"],
 	"license": "MIT",
 	"authors": [
 		{

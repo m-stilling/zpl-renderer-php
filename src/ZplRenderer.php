@@ -8,6 +8,7 @@ use Stilling\ZplRenderer\Parser\Interpreter;
 use Stilling\ZplRenderer\Parser\Tokenizer;
 use Stilling\ZplRenderer\Renderer\PdfRenderer;
 use Stilling\ZplRenderer\Renderer\PngRenderer;
+use Stilling\ZplRenderer\Renderer\SvgRenderer;
 
 /**
  * Entry point: turn ZPL into labels, and labels into output formats.
@@ -48,6 +49,33 @@ class ZplRenderer {
 		$options ??= new Options();
 
 		return (new PngRenderer($options))->render(self::parse($zpl, $options));
+	}
+
+	/**
+	 * Render one ^XA ... ^XZ format as an SVG image. Returns the SVG document.
+	 *
+	 * @param int $index which label in the input, counted from 0
+	 */
+	public static function toSvg(string $zpl, ?Options $options = null, int $index = 0): string {
+		$options ??= new Options();
+		$labels = self::parse($zpl, $options);
+
+		if (!isset($labels[$index])) {
+			throw new RenderException("The input holds " . count($labels) . " label(s); there is no label {$index}.");
+		}
+
+		return (new SvgRenderer($options))->renderLabel($labels[$index]);
+	}
+
+	/**
+	 * Render every ^XA ... ^XZ format in the input as an SVG image, one per label.
+	 *
+	 * @return list<string>
+	 */
+	public static function toSvgs(string $zpl, ?Options $options = null): array {
+		$options ??= new Options();
+
+		return (new SvgRenderer($options))->render(self::parse($zpl, $options));
 	}
 
 	/**
