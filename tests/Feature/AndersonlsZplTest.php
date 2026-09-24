@@ -306,7 +306,7 @@ describe("barcodes", function () {
 		$barcode = builderElement($label, 0, BarcodeElement::class);
 
 		expect($label->elements)->toHaveCount(1)
-			->and([$barcode->x, $barcode->y])->toBe([25, $type === Barcode::QR ? 45 : 35])
+			->and([$barcode->x, $barcode->y])->toBe([25, 35])
 			->and($barcode->matrix->columns)->toBeGreaterThan(0);
 	})->with([
 		[Barcode::AZTEK, "Aztec"],
@@ -374,7 +374,7 @@ describe("barcodes", function () {
 		expect([$code128->x, $code128->y, $code128->text, $code128->orientation])->toBe([40, 400, "ABC123456789", ModelOrientation::Rotated])
 			->and($code128->moduleHeight)->toEqual(160)
 			->and([$code39->x, $code39->y, $code39->text])->toBe([40, 639, "*ABC123*"])
-			->and([$qr->x, $qr->y, $qr->moduleWidth, $qr->text])->toEqual([400, 410, 6, null])
+			->and([$qr->x, $qr->y, $qr->moduleWidth, $qr->text])->toEqual([400, 400, 6, null])
 			->and([$qr->matrix->columns, $qr->matrix->rows])->toBe([25, 25]);
 	});
 });

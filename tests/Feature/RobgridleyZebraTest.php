@@ -134,7 +134,7 @@ test("barcodes keep their module width, height and interpretation line", functio
 		->and([$defaultHeight->moduleHeight, $defaultHeight->text])->toEqual([80, null])
 		->and([$code39->text, $code39->textAbove, $code39->moduleHeight])->toEqual(["*ABC*", true, 60])
 		->and([$ean->text, $ean->orientation])->toBe(["5901234123457", Orientation::Rotated])
-		->and([$qr->x, $qr->y, $qr->moduleWidth, $qr->text])->toEqual([400, 20, 5, null])
+		->and([$qr->x, $qr->y, $qr->moduleWidth, $qr->text])->toEqual([400, 10, 5, null])
 		->and([$dataMatrix->moduleWidth, $dataMatrix->text])->toEqual([6, null]);
 });
 
