@@ -10,6 +10,9 @@ use Stilling\Zpl\Model\Justification;
  * Everything collected for the field being built, from ^FO or ^FT up to ^FS.
  */
 class FieldState {
+	/** Whether ^FO or ^FT placed the field. */
+	public bool $positioned = false;
+
 	public int $x = 0;
 
 	public int $y = 0;
@@ -36,4 +39,11 @@ class FieldState {
 
 	/** A graphic element (^GB, ^GC, ^GD, ^GE, ^GF, ^XG, ^IM) waiting for ^FS. */
 	public ?\Closure $shape = null;
+
+	/**
+	 * Whether nothing was collected: a ^FS that closes an empty field only ends a command such as ^DF or ^XF.
+	 */
+	public function isEmpty(): bool {
+		return !$this->positioned && $this->data === null && $this->number === null && $this->barcode === null && $this->shape === null;
+	}
 }

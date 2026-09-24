@@ -69,6 +69,11 @@ class Interpreter {
 
 	private int $labelHeight = 0;
 
+	/** The ^LL height for the labels that follow; a ^LL after the first ^FS sets only this one. */
+	private int $nextLabelHeight = 0;
+
+	private bool $fieldSeparated = false;
+
 	private int $homeX = 0;
 
 	private int $homeY = 0;
@@ -105,7 +110,7 @@ class Interpreter {
 		$this->font = new FontSpec(ZebraFont::DEFAULT_FONT, 9, 5);
 		$this->field = new FieldState();
 		$this->labelWidth = $this->options->widthDots();
-		$this->labelHeight = $this->options->heightDots();
+		$this->nextLabelHeight = $this->options->heightDots();
 	}
 
 	/**
@@ -196,18 +201,16 @@ class Interpreter {
 			quantity: $this->quantity,
 			inverted: $this->inverted,
 			mirrored: $this->mirrored,
-			reversed: $this->reversed,
 		);
 	}
 
+	/**
+	 * Start a new format. The printer settings (^PW, ^LL, ^LH, ^LS, ^LT, ^LR, ^PO, ^PM, ^CF, ^FW, ^BY, ^CI)
+	 * stay as the earlier formats left them.
+	 */
 	private function resetLabel(): void {
-		$this->homeX = 0;
-		$this->homeY = 0;
-		$this->labelTop = 0;
-		$this->labelShift = 0;
-		$this->reversed = false;
-		$this->inverted = false;
-		$this->mirrored = false;
+		$this->labelHeight = $this->nextLabelHeight;
+		$this->fieldSeparated = false;
 		$this->quantity = 1;
 		$this->elements = [];
 		$this->field = new FieldState();
@@ -267,7 +270,7 @@ class Interpreter {
 	private function apply(Command $command): void {
 		match ($command->name) {
 			"FO", "FT" => $this->fieldOrigin($command),
-			"FS" => $this->flushField(),
+			"FS" => $this->fieldSeparator(),
 			"FD", "FV" => $this->field->data = $command->params,
 			"SN" => $this->field->data = $command->arg(0, "0"),
 			"FN" => $this->field->number = $command->int(0, 0),
@@ -330,6 +333,7 @@ class Interpreter {
 
 	private function fieldOrigin(Command $command): void {
 		$this->flushField();
+		$this->field->positioned = true;
 		$this->field->x = $command->int(0, 0);
 		$this->field->y = $command->int(1, 0);
 		$this->field->typeset = $command->is("FT");
@@ -384,8 +388,14 @@ class Interpreter {
 	}
 
 	private function labelLength(Command $command): void {
-		if ($this->options->honorLabelSize && $command->int(0, 0) > 0) {
-			$this->labelHeight = $command->int(0, 0);
+		if (!$this->options->honorLabelSize || $command->int(0, 0) <= 0) {
+			return;
+		}
+
+		$this->nextLabelHeight = $command->int(0, 0);
+
+		if (!$this->fieldSeparated) {
+			$this->labelHeight = $this->nextLabelHeight;
 		}
 	}
 
@@ -788,10 +798,15 @@ class Interpreter {
 		return [
 			"x" => $this->field->x + $this->homeX + $this->labelShift,
 			"y" => $this->field->y + $this->homeY + $this->labelTop,
-			"reverse" => $this->field->reverse,
+			"reverse" => $this->field->reverse !== $this->reversed,
 			"typeset" => $this->field->typeset,
 			"justification" => $this->field->justification ?? $this->defaultJustification,
 		];
+	}
+
+	private function fieldSeparator(): void {
+		$this->fieldSeparated = $this->fieldSeparated || !$this->field->isEmpty();
+		$this->flushField();
 	}
 
 	private function flushField(): void {

@@ -289,13 +289,39 @@ test("^DF stores a format that ^XF recalls with ^FN values filled in", function 
 		->and(text($zpl, 1)->text)->toBe("default");
 });
 
-test("^PQ, ^PO, ^PM and ^LR set the label flags", function () {
-	$label = label("^XA^PQ3^POI^PMY^LRY^XZ");
+test("^PQ, ^PO and ^PM set the label flags", function () {
+	$label = label("^XA^PQ3^POI^PMY^XZ");
 
 	expect($label->quantity)->toBe(3)
 		->and($label->inverted)->toBeTrue()
-		->and($label->mirrored)->toBeTrue()
-		->and($label->reversed)->toBeTrue();
+		->and($label->mirrored)->toBeTrue();
+});
+
+test("^LR reverses the fields after it until ^LRN", function () {
+	$zpl = "^XA^FO0,0^FDa^FS^LRY^FO0,0^FDb^FS^FO0,0^FR^FDc^FS^LRN^FO0,0^FDd^FS^XZ";
+
+	expect(array_map(fn (int $index): bool => text($zpl, $index)->reverse, [0, 1, 2, 3]))->toBe([false, true, false, false]);
+});
+
+test("printer settings carry over to the labels that follow and ^PQ does not", function () {
+	$labels = Zpl::parse("^XA^LH10,20^LS5^LT7^LRY^POI^PMY^PQ3^XZ^XA^FO100,100^FDx^FS^XZ");
+	$text = $labels[1]->elements[0];
+
+	expect([$text->x, $text->y, $text->reverse])->toBe([115, 127, true])
+		->and([$labels[1]->inverted, $labels[1]->mirrored, $labels[1]->quantity])->toBe([true, true, 1]);
+});
+
+test("^LL after the first ^FS sets the length of the next label only", function () {
+	$labels = Zpl::parse("^XA^LL100^FO0,0^FDx^FS^LL200^XZ^XA^XZ");
+
+	expect([$labels[0]->height, $labels[1]->height])->toBe([100, 200]);
+});
+
+test("the ^FS that ends ^DF or ^XF does not count as the first ^FS for ^LL", function () {
+	$labels = Zpl::parse("^XA^DFR:SIZE.ZPL^FS^LL240^FO0,0^FDx^FS^XZ^XA^XFR:SIZE.ZPL^FS^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
+
+	expect($labels)->toHaveCount(1)
+		->and($labels[0]->height)->toBe(240);
 });
 
 test("a field without ^FS before ^XZ is still printed", function () {

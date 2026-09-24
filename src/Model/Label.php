@@ -23,8 +23,6 @@ class Label {
 		public readonly bool $inverted = false,
 		/** ^PMY: mirror the label horizontally. */
 		public readonly bool $mirrored = false,
-		/** ^LRY: reverse every field. */
-		public readonly bool $reversed = false,
 	) {
 	}
 }

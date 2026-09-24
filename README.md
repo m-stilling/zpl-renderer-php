@@ -92,6 +92,15 @@ Without an output path the file is written next to the input with the new extens
 
 `^DF` stores a format. `^XF` recalls it and fills the `^FN` fields from the recalling format.
 
+`^PW`, `^LL`, `^LH`, `^LS`, `^LT`, `^LR`, `^PO`, `^PM`, `^CF`, `^FW`, `^BY` and `^CI` are printer settings. They stay in effect for the labels that follow, until a command changes them. `^PQ` applies to its own label only. A `^LL` after the first `^FS` of a label sets the length of the labels after it, not of its own label. `^LR` reverses the fields after it, until `^LRN`.
+
+```
+^XA^PW400^LL200^LRY^FO10,10^FDfirst^FS^XZ
+^XA^FO10,10^FDsecond^FS^XZ
+```
+
+Both labels are 400 × 200 dots, and both fields print in reverse.
+
 `^GF` takes ASCII hex, run-length compressed, `:B64:` and `:Z64:` data. `~DY` takes GRF, and PNG through GD.
 
 Font 0 is the scalable CG Triumvirate Bold Condensed. Fonts A to H are the fixed-pitch bitmap fonts; they magnify in whole steps like the printer does, and fonts B and H print capital letters only. Any other font id is treated like font 0.

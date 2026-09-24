@@ -78,7 +78,7 @@ class PngRenderer {
 		$this->layer = $this->layer($this->width, $this->height);
 
 		foreach ($label->elements as $element) {
-			$this->renderElement($canvas, $element, $label->reversed);
+			$this->renderElement($canvas, $element);
 		}
 
 		if ($label->mirrored) {
@@ -95,7 +95,7 @@ class PngRenderer {
 		return (string) ob_get_clean();
 	}
 
-	private function renderElement(\GdImage $canvas, Element $element, bool $labelReversed): void {
+	private function renderElement(\GdImage $canvas, Element $element): void {
 		$layer = $this->layer;
 		$this->drawn = null;
 
@@ -124,7 +124,7 @@ class PngRenderer {
 			return;
 		}
 
-		$this->merge($canvas, $layer, $x0, $y0, $x1, $y1, $element->reverse !== $labelReversed);
+		$this->merge($canvas, $layer, $x0, $y0, $x1, $y1, $element->reverse);
 		imagefilledrectangle($layer, $x0, $y0, $x1 - 1, $y1 - 1, self::CLEAR);
 	}
 

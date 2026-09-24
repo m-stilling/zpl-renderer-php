@@ -68,13 +68,13 @@ class PdfRenderer {
 		}
 
 		foreach ($label->elements as $element) {
-			$out .= $this->renderElement($element, $label->reversed);
+			$out .= $this->renderElement($element);
 		}
 
 		return $out . "Q\n";
 	}
 
-	private function renderElement(Element $element, bool $labelReversed): string {
+	private function renderElement(Element $element): string {
 		[$width, $height, $body, $anchor] = match (true) {
 			$element instanceof TextElement => $this->text($element),
 			$element instanceof BoxElement => $this->shape(Shapes::box($element), $element->width, $element->height, $element->black),
@@ -92,7 +92,7 @@ class PdfRenderer {
 
 		$matrix = Placement::matrix($element, $width, $height, $anchor);
 		$cm = implode(" ", array_map(Document::number(...), [$matrix->a, $matrix->b, $matrix->c, $matrix->d, $matrix->e, $matrix->f]));
-		$paint = $element->reverse !== $labelReversed ? "/" . Document::REVERSE_STATE . " gs 1 g 1 G" : "0 g 0 G";
+		$paint = $element->reverse ? "/" . Document::REVERSE_STATE . " gs 1 g 1 G" : "0 g 0 G";
 
 		return "q\n{$cm} cm\n{$paint}\n{$body}Q\n";
 	}
