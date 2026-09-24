@@ -26,34 +26,34 @@ Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the
 
 ^FX Sender
 ^CF0,28
-^FO50,50^FDNordvang Logistik ApS^FS
+^FO50,50^FDNorthvale Logistics Inc.^FS
 ^CF0,22
-^FO50,85^FDHavnegade 4^FS
-^FO50,112^FD9000 Aalborg, Danmark^FS
+^FO50,85^FD4 Harbor Street^FS
+^FO50,112^FDPortland, OR 97209^FS
 
 ^FX Divider
 ^FO50,150^GB712,3,3^FS
 
 ^FX Recipient
 ^CF0,26
-^FO50,175^FDModtager^FS
+^FO50,175^FDShip to^FS
 ^CF0,44
-^FO50,210^FDBakkely Byg A/S^FS
+^FO50,210^FDBrookside Builders LLC^FS
 ^CF0,36
-^FO50,265^FDMosevej 18^FS
-^FO50,310^FD7400 Herning^FS
-^FO50,355^FDDanmark^FS
+^FO50,265^FD18 Marsh Road^FS
+^FO50,310^FDDenver, CO 80202^FS
+^FO50,355^FDUnited States^FS
 
 ^FX Service box
 ^FO50,420^GB712,120,3^FS
 ^FO50,420^GB712,50,50^FS
-^FO65,432^FR^CF0,30^FDPakke - Erhverv^FS
+^FO65,432^FR^CF0,30^FDParcel - Business^FS
 ^CF0,28
-^FO65,485^FDVægt: 12,4 kg^FS
-^FO420,485^FDKolli: 1 / 2^FS
+^FO65,485^FDWeight: 27.3 lb^FS
+^FO420,485^FDPieces: 1 / 2^FS
 
 ^FX Sorting code
-^FO50,570^A0N,90,90^FDDK-74^FS
+^FO50,570^A0N,90,90^FDCO-74^FS
 ^FO500,570^BQN,2,6^FDQA,https://example.com/track/00357000000000001234^FS
 
 ^FX Route barcode
@@ -63,11 +63,11 @@ Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the
 ^FX Footer
 ^FO50,900^GB712,3,3^FS
 ^CF0,24
-^FO50,925^FB712,3,4,L,0^FDForsendelsen leveres på hverdage mellem 8 og 16. Kontakt kundeservice hvis pakken ikke er modtaget inden for fem hverdage.^FS
+^FO50,925^FB712,3,4,L,0^FDDelivered on weekdays from 8 am to 4 pm. Contact customer service if the parcel has not arrived within five business days.^FS
 ^FO50,1040^A0N,24,24^FDRef: ORD-2026-00918^FS
 ^FO50,1080^GB300,60,2^FS
 ^FO70,1095^A0N,30,30^FDINV 44812^FS
-^FT400,1140^A0R,28,28^FDVertikal^FS
+^FT400,1140^A0R,28,28^FDVertical^FS
 ^XZ
 </pre>
 </td>
