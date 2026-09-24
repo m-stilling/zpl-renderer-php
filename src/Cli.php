@@ -24,6 +24,7 @@ class Cli {
 		  --height=<mm>        Label height in millimeters (default 152.4)
 		  --size=<w>x<h>       Label size in inches, for example 4x6
 		  --scale=<1-8>        Pixels per dot in PNG output (default 1)
+		  --no-antialias       Draw PNG text in black and white only, like the printer
 		  --ignore-label-size  Ignore ^PW and ^LL in the label
 		  --single             Ignore ^PQ and render each label once
 		  --overwrite          Replace the output file when it exists
@@ -189,6 +190,7 @@ class Cli {
 			honorLabelSize: !isset($flags["ignore-label-size"]),
 			honorQuantity: !isset($flags["single"]),
 			pixelsPerDot: isset($flags["scale"]) ? (int) $flags["scale"] : 1,
+			antialias: !isset($flags["no-antialias"]),
 		);
 	}
 }

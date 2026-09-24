@@ -25,6 +25,8 @@ class Options {
 		public readonly float $scalableFontCondense = 0.887,
 		/** Pixels per printer dot in PNG output. */
 		public readonly int $pixelsPerDot = 1,
+		/** Smooth text edges in PNG output with gray pixels. When false, every pixel is black or white, like the printer prints it. */
+		public readonly bool $antialias = true,
 		/** TrueType file drawn for the scalable font 0. */
 		public readonly string $scalableFontFile = self::FONT_DIRECTORY . "/RobotoCondensed-Bold.ttf",
 		/** TrueType file drawn for the bitmap fonts A and C to H. */

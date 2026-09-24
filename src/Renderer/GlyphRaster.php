@@ -3,27 +3,27 @@
 namespace Stilling\Zpl\Renderer;
 
 /**
- * Turns a glyph outline into one-bit pixels. A pixel is ink when the outline
- * covers at least half of it, under the nonzero winding rule that TrueType uses.
+ * Measures how much of each pixel a glyph outline covers, under the nonzero
+ * winding rule that TrueType uses.
  */
 class GlyphRaster {
 	/** Sample rows per pixel row; across a row, coverage is exact. */
-	private const int SUBROWS = 4;
+	private const int SUBROWS = 8;
 
 	/** Longest straight piece a curve is flattened into, in pixels. */
 	private const float FLATNESS = 1.5;
 
 	/**
-	 * The ink of a glyph as horizontal runs of pixels, relative to the glyph
-	 * origin on the baseline: row (negative above the baseline), first column,
-	 * last column.
+	 * How much of each pixel a glyph covers, relative to the glyph origin on
+	 * the baseline: row (negative above the baseline), column, and the covered
+	 * fraction of the pixel, greater than zero.
 	 *
 	 * @param list<list<array{float, float, bool}>> $contours outline in em, y up
 	 * @param float $scaleX pixels per em horizontally
 	 * @param float $scaleY pixels per em vertically
-	 * @return list<array{int, int, int}>
+	 * @return list<array{int, int, float}>
 	 */
-	public static function runs(array $contours, float $scaleX, float $scaleY): array {
+	public static function coverage(array $contours, float $scaleX, float $scaleY): array {
 		$edges = [];
 
 		foreach ($contours as $contour) {
@@ -47,7 +47,7 @@ class GlyphRaster {
 
 		$top = (int) floor(min(array_column($edges, 1)));
 		$bottom = (int) ceil(max(array_column($edges, 3)));
-		$runs = [];
+		$pixels = [];
 
 		for ($row = $top; $row < $bottom; $row++) {
 			/** @var array<int, float> $coverage */
@@ -64,22 +64,16 @@ class GlyphRaster {
 				}
 			}
 
-			$ink = array_keys(array_filter($coverage, fn (float $amount): bool => $amount >= 0.5));
-			sort($ink);
+			ksort($coverage);
 
-			$start = null;
-
-			foreach ($ink as $index => $column) {
-				$start ??= $column;
-
-				if (($ink[$index + 1] ?? null) !== $column + 1) {
-					$runs[] = [$row, $start, $column];
-					$start = null;
+			foreach ($coverage as $column => $amount) {
+				if ($amount > 0.001) {
+					$pixels[] = [$row, $column, min(1.0, $amount)];
 				}
 			}
 		}
 
-		return $runs;
+		return $pixels;
 	}
 
 	/**

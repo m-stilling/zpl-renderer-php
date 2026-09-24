@@ -20,24 +20,26 @@ use Stilling\Zpl\Model\TextElement;
 use Stilling\Zpl\Options;
 
 /**
- * Draws labels as one-bit PNG images with GD, one image per label, at
- * pixelsPerDot pixels for every printer dot.
+ * Draws labels as grayscale PNG images with GD, one image per label, at
+ * pixelsPerDot pixels for every printer dot. Shapes, barcodes and images are
+ * black or white; text edges are gray unless antialiasing is off.
  *
- * Every field is drawn on its own layer and then merged into the label:
- * painted over it, or XOR-ed into it for reverse fields, the way the printer does.
+ * Every field is drawn on a transparent layer and then merged into the label:
+ * painted over it, or inverted into it for reverse fields, the way the printer does.
  */
 class PngRenderer {
-	/** Layer color index that stays transparent when the layer is merged. */
-	private const int CLEAR = 0;
+	/** Layer color that stays transparent when the layer is merged. */
+	private const int CLEAR = 0xFF00FF;
 
-	private const int BLACK = 1;
+	private const int BLACK = 0x000000;
 
-	private const int WHITE = 2;
+	/** Layer color that erases to white. Black ink with partial coverage is a gray between BLACK and this. */
+	private const int WHITE = 0xFFFFFF;
 
 	/** Most glyph rasters kept for reuse. */
 	private const int GLYPH_CACHE_SIZE = 4096;
 
-	/** @var array<string, list<array{int, int, int}>> glyph rasters by font file, character and scale */
+	/** @var array<string, list<array{int, int, float}>> glyph rasters by font file, character and scale */
 	private static array $glyphs = [];
 
 	private int $scale = 1;
@@ -45,6 +47,9 @@ class PngRenderer {
 	private int $width = 0;
 
 	private int $height = 0;
+
+	/** The transparent layer every field of the current label is drawn on, in turn. */
+	private \GdImage $layer;
 
 	/** @var array{int, int, int, int}|null pixel bounds drawn on the current layer: x0, y0, x1, y1 */
 	private ?array $drawn = null;
@@ -69,9 +74,8 @@ class PngRenderer {
 		$this->scale = $this->options->pixelsPerDot;
 		$this->width = $label->width * $this->scale;
 		$this->height = $label->height * $this->scale;
-		$canvas = $this->create($this->width, $this->height);
-		imagecolorallocate($canvas, 255, 255, 255);
-		imagecolorallocate($canvas, 0, 0, 0);
+		$canvas = $this->canvas($this->width, $this->height);
+		$this->layer = $this->layer($this->width, $this->height);
 
 		foreach ($label->elements as $element) {
 			$this->renderElement($canvas, $element, $label->reversed);
@@ -92,7 +96,7 @@ class PngRenderer {
 	}
 
 	private function renderElement(\GdImage $canvas, Element $element, bool $labelReversed): void {
-		$layer = $this->layer($this->width, $this->height);
+		$layer = $this->layer;
 		$this->drawn = null;
 
 		match (true) {
@@ -120,24 +124,36 @@ class PngRenderer {
 			return;
 		}
 
-		if ($element->reverse !== $labelReversed) {
-			$this->mergeReversed($canvas, $layer, $x0, $y0, $x1, $y1);
-		} else {
-			imagecopy($canvas, $layer, $x0, $y0, $x0, $y0, $x1 - $x0, $y1 - $y0);
-		}
+		$this->merge($canvas, $layer, $x0, $y0, $x1, $y1, $element->reverse !== $labelReversed);
+		imagefilledrectangle($layer, $x0, $y0, $x1 - 1, $y1 - 1, self::CLEAR);
 	}
 
 	/**
-	 * XOR the layer into the canvas: every inked pixel flips the canvas pixel.
+	 * Paint the layer into the canvas. Black ink darkens the canvas by its
+	 * coverage and white ink erases it. In a reverse field every inked pixel
+	 * inverts the canvas by its coverage instead, so black on black comes out white.
 	 */
-	private function mergeReversed(\GdImage $canvas, \GdImage $layer, int $x0, int $y0, int $x1, int $y1): void {
+	private function merge(\GdImage $canvas, \GdImage $layer, int $x0, int $y0, int $x1, int $y1, bool $reverse): void {
 		for ($y = $y0; $y < $y1; $y++) {
 			for ($x = $x0; $x < $x1; $x++) {
-				if (imagecolorat($layer, $x, $y) === self::CLEAR) {
+				$color = imagecolorat($layer, $x, $y);
+
+				if ($color === self::CLEAR || $color === false) {
 					continue;
 				}
 
-				imagesetpixel($canvas, $x, $y, imagecolorat($canvas, $x, $y) === 0 ? 1 : 0);
+				$ink = $color === self::WHITE ? 255 : 255 - ($color & 0xFF);
+				$gray = (int) imagecolorat($canvas, $x, $y);
+
+				if ($reverse) {
+					$gray = abs($gray - $ink);
+				} elseif ($color === self::WHITE) {
+					$gray = 255;
+				} else {
+					$gray = intdiv($gray * (255 - $ink) + 127, 255);
+				}
+
+				imagesetpixel($canvas, $x, $y, $gray);
 			}
 		}
 	}
@@ -152,25 +168,36 @@ class PngRenderer {
 		];
 	}
 
-	private function create(int $width, int $height): \GdImage {
-		$image = imagecreate(max(1, $width), max(1, $height));
+	/**
+	 * A white image with a 256-step gray palette, in which the color index is the gray level.
+	 */
+	private function canvas(int $width, int $height): \GdImage {
+		$canvas = imagecreate(max(1, $width), max(1, $height));
 
-		if ($image === false) {
+		if ($canvas === false) {
 			throw new RenderException("Cannot create a {$width} x {$height} image.");
 		}
 
-		return $image;
+		for ($gray = 0; $gray < 256; $gray++) {
+			imagecolorallocate($canvas, $gray, $gray, $gray);
+		}
+
+		imagefilledrectangle($canvas, 0, 0, imagesx($canvas) - 1, imagesy($canvas) - 1, 255);
+
+		return $canvas;
 	}
 
 	/**
-	 * A transparent image with the black and white inks allocated.
+	 * A transparent image to draw one field on.
 	 */
 	private function layer(int $width, int $height): \GdImage {
-		$layer = $this->create($width, $height);
-		imagecolorallocate($layer, 255, 0, 255);
-		imagecolorallocate($layer, 0, 0, 0);
-		imagecolorallocate($layer, 255, 255, 255);
-		imagecolortransparent($layer, self::CLEAR);
+		$layer = imagecreatetruecolor(max(1, $width), max(1, $height));
+
+		if ($layer === false) {
+			throw new RenderException("Cannot create a {$width} x {$height} image.");
+		}
+
+		imagefilledrectangle($layer, 0, 0, imagesx($layer) - 1, imagesy($layer) - 1, self::CLEAR);
 
 		return $layer;
 	}
@@ -199,51 +226,74 @@ class PngRenderer {
 		$file = $font->typeface->file($this->options);
 		$origin = (int) floor($x * $this->scale);
 		$pen = $x;
-		$runs = [];
+		$pixels = [];
 
 		foreach (unpack("C*", $winAnsi) ?: [] as $code) {
 			if ($code !== 32) {
 				$column = (int) round($pen * $this->scale) - $origin;
 
-				foreach ($this->glyphRuns($font, $file, $code, $scaleX, $scaleY) as [$row, $from, $to]) {
-					$runs[] = [$row, $from + $column, $to + $column];
+				foreach ($this->glyphCoverage($font, $file, $code, $scaleX, $scaleY) as [$row, $col, $coverage]) {
+					$pixels[] = [$row, $col + $column, $coverage];
 				}
 			}
 
 			$pen += $font->width(chr($code)) + ($code === 32 ? $wordSpacing : 0);
 		}
 
-		if ($runs === []) {
+		if ($pixels === []) {
 			return;
 		}
 
-		$top = min(array_column($runs, 0));
-		$left = min(array_column($runs, 1));
-		$image = $this->layer(max(array_column($runs, 2)) - $left + 1, max(array_column($runs, 0)) - $top + 1);
+		$top = min(array_column($pixels, 0));
+		$left = min(array_column($pixels, 1));
+		$image = $this->layer(max(array_column($pixels, 1)) - $left + 1, max(array_column($pixels, 0)) - $top + 1);
 
-		foreach ($runs as [$row, $from, $to]) {
-			imageline($image, $from - $left, $row - $top, $to - $left, $row - $top, self::BLACK);
+		foreach ($pixels as [$row, $col, $coverage]) {
+			$color = $this->ink($coverage, imagecolorat($image, $col - $left, $row - $top));
+
+			if ($color !== null) {
+				imagesetpixel($image, $col - $left, $row - $top, $color);
+			}
 		}
 
 		$this->place($layer, $image, $matrix, $orientation, ($origin + $left) / $this->scale, $baseline + $top / $this->scale);
 	}
 
 	/**
-	 * @return list<array{int, int, int}>
+	 * The layer color for black ink at the given coverage, on top of what the
+	 * pixel already holds. Without antialiasing a pixel is ink when at least
+	 * half of it is covered.
 	 */
-	private function glyphRuns(ResolvedFont $font, string $file, int $code, float $scaleX, float $scaleY): array {
+	private function ink(float $coverage, int|false $under): ?int {
+		if (!$this->options->antialias) {
+			return $coverage >= 0.5 ? self::BLACK : null;
+		}
+
+		if ($under !== false && $under !== self::CLEAR) {
+			$coverage = 1 - (1 - $coverage) * ($under & 0xFF) / 255;
+		}
+
+		$gray = (int) round(255 * (1 - $coverage));
+
+		return $gray >= 255 ? null : $gray * 0x010101;
+	}
+
+	/**
+	 * @return list<array{int, int, float}>
+	 */
+	private function glyphCoverage(ResolvedFont $font, string $file, int $code, float $scaleX, float $scaleY): array {
 		$key = sprintf("%s|%d|%.4F|%.4F", $file, $code, $scaleX, $scaleY);
 
 		if (count(self::$glyphs) >= self::GLYPH_CACHE_SIZE) {
 			self::$glyphs = [];
 		}
 
-		return self::$glyphs[$key] ??= GlyphRaster::runs($font->face->outline($code), $scaleX, $scaleY);
+		return self::$glyphs[$key] ??= GlyphRaster::coverage($font->face->outline($code), $scaleX, $scaleY);
 	}
 
 	/**
-	 * Rotate a layer-compatible image for the field orientation and paste it
-	 * so that its local top-left corner lands where the matrix puts it.
+	 * Rotate a layer-compatible image for the field orientation and paste its
+	 * inked pixels so that its local top-left corner lands where the matrix puts it.
 	 */
 	private function place(\GdImage $layer, \GdImage $image, Matrix $matrix, Orientation $orientation, float $localX, float $localY): void {
 		$width = imagesx($image) / $this->scale;
@@ -252,8 +302,20 @@ class PngRenderer {
 		$image = $this->rotate($image, $orientation);
 		$x = (int) round($minX);
 		$y = (int) round($minY);
-		imagecopy($layer, $image, $x, $y, 0, 0, imagesx($image), imagesy($image));
-		$this->mark($x, $y, $x + imagesx($image), $y + imagesy($image));
+		$columns = imagesx($image);
+		$rows = imagesy($image);
+
+		for ($row = 0; $row < $rows; $row++) {
+			for ($column = 0; $column < $columns; $column++) {
+				$color = imagecolorat($image, $column, $row);
+
+				if ($color !== false && $color !== self::CLEAR) {
+					imagesetpixel($layer, $x + $column, $y + $row, $color);
+				}
+			}
+		}
+
+		$this->mark($x, $y, $x + $columns, $y + $rows);
 	}
 
 	/**

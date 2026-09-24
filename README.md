@@ -104,6 +104,7 @@ file_put_contents('label.png', Zpl::toPng($zpl, $options));
 | `maxPages` | `1000` | Upper bound on pages per PDF. |
 | `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |
 | `pixelsPerDot` | `1` | Pixels per printer dot in PNG output, 1 to 8. |
+| `antialias` | `true` | Smooth text edges in PNG output with gray pixels. `false` gives black and white only, like the printer. |
 | `scalableFontFile` | Roboto Condensed Bold | TrueType file drawn for font 0. |
 | `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H. |
 | `monoBoldFontFile` | Roboto Mono Bold | TrueType file drawn for font B. |
@@ -171,7 +172,7 @@ Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^B
 
 Font 0 is drawn with [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold, at the width of CG Triumvirate Bold Condensed. Fonts A to H are drawn with [Roboto Mono](https://github.com/googlefonts/robotomono), at the cell size and pitch of the printer bitmap fonts. The font files sit in `resources/fonts` with their licenses.
 
-The PDF and the PNG draw the same glyphs from the same font files, at the same positions. The PDF embeds only the characters that the document draws, so a font adds a few kilobytes. The PNG puts every character on a whole pixel, so the same character has the same pixels wherever it appears.
+The PDF and the PNG draw the same glyphs from the same font files, at the same positions. The PDF embeds only the characters that the document draws, so a font adds a few kilobytes. The PNG puts every character on a whole pixel, so the same character has the same pixels wherever it appears. Text edges in the PNG are smoothed with gray pixels; shapes, barcodes and images stay black and white, dot for dot. Set `antialias: false` to get black and white text, like the printer prints it.
 
 Point the `scalableFontFile`, `monoFontFile` and `monoBoldFontFile` options at other TrueType files to draw with different glyphs. The file must have TrueType outlines (a `glyf` table). Set `scalableFontCondense` to the horizontal scale that gives the new font 0 file the width of the printer font.
 
