@@ -158,7 +158,7 @@ Without an output path the file is written next to the input with the new extens
 
 `^DF` stores a format. `^XF` recalls it and fills the `^FN` fields from the recalling format.
 
-`^PW`, `^LL`, `^LH`, `^LS`, `^LT`, `^LR`, `^PO`, `^PM`, `^CF`, `^FW`, `^BY` and `^CI` are printer settings. They stay in effect for the labels that follow, until a command changes them. `^PQ` applies to its own label only. A `^LL` after the first `^FS` of a label sets the length of the labels after it, not of its own label. `^LR` reverses the fields after it, until `^LRN`.
+`^PW`, `^LL`, `^LH`, `^LS`, `^LT`, `^LR`, `^PO`, `^PM`, `^CF`, `^FW`, `^BY` and `^CI` are printer settings. They stay in effect for the labels that follow, until a command changes them. `^PQ` applies to its own label only. A `^LL` after the first `^FS` of a label sets the length of the labels after it, not of its own label. `^LR` reverses the fields after it, until `^LRN`. A field with `^FR` under `^LR` also prints reversed.
 
 ```
 ^XA^PW400^LL200^LRY^FO10,10^FDfirst^FS^XZ

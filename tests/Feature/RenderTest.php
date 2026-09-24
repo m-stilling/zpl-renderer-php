@@ -94,10 +94,10 @@ test("reverse fields paint white in difference mode", function () {
 	expect($content)->toContain("/GSr gs 1 g 1 G");
 });
 
-test("^LR reverses every field and a field ^FR cancels it", function () {
+test("^LR reverses every field, and a field ^FR under it stays reversed", function () {
 	$content = contentStreams(Zpl::toPdf("^XA^LRY^FO0,0^GB10,10,10^FS^FO0,0^FR^GB10,10,10^FS^XZ"));
 
-	expect(substr_count($content, "/GSr gs"))->toBe(1);
+	expect(substr_count($content, "/GSr gs"))->toBe(2);
 });
 
 test("^POI and ^PMY flip the whole page", function () {

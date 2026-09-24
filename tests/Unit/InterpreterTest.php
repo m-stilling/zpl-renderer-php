@@ -300,7 +300,7 @@ test("^PQ, ^PO and ^PM set the label flags", function () {
 test("^LR reverses the fields after it until ^LRN", function () {
 	$zpl = "^XA^FO0,0^FDa^FS^LRY^FO0,0^FDb^FS^FO0,0^FR^FDc^FS^LRN^FO0,0^FDd^FS^XZ";
 
-	expect(array_map(fn (int $index): bool => text($zpl, $index)->reverse, [0, 1, 2, 3]))->toBe([false, true, false, false]);
+	expect(array_map(fn (int $index): bool => text($zpl, $index)->reverse, [0, 1, 2, 3]))->toBe([false, true, true, false]);
 });
 
 test("printer settings carry over to the labels that follow and ^PQ does not", function () {

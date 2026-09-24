@@ -798,7 +798,7 @@ class Interpreter {
 		return [
 			"x" => $this->field->x + $this->homeX + $this->labelShift,
 			"y" => $this->field->y + $this->homeY + $this->labelTop,
-			"reverse" => $this->field->reverse !== $this->reversed,
+			"reverse" => $this->field->reverse || $this->reversed,
 			"typeset" => $this->field->typeset,
 			"justification" => $this->field->justification ?? $this->defaultJustification,
 		];
