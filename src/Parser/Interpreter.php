@@ -40,6 +40,9 @@ class Interpreter {
 	/** tc-lib-barcode emits every PDF417 row as three module rows. */
 	private const int PDF417_UNITS_PER_ROW = 3;
 
+	/** Dots a ^FO QR code is moved away from its origin, whatever the magnification. */
+	private const int QR_SHIFT = 10;
+
 	private GraphicStore $graphics;
 
 	private GraphicDecoder $graphicDecoder;
@@ -709,7 +712,15 @@ class Interpreter {
 
 			[$matrix] = $this->barcodes->create("QRCODE,{$level},NL,0,1,0,0,{$mask}", $data);
 
-			return $this->matrixElement($matrix, $magnification, $magnification, $orientation);
+			// The printer moves a ^FO QR code away from its origin: down when
+			// normal, right when inverted, not at all when rotated.
+			[$shiftX, $shiftY] = match ($orientation) {
+				Orientation::Normal => [0, self::QR_SHIFT],
+				Orientation::Inverted => [self::QR_SHIFT, 0],
+				default => [0, 0],
+			};
+
+			return $this->matrixElement($matrix, $magnification, $magnification, $orientation, $shiftX, $shiftY);
 		};
 	}
 
@@ -765,9 +776,16 @@ class Interpreter {
 		);
 	}
 
-	private function matrixElement(BarcodeMatrix $matrix, float $moduleWidth, float $moduleHeight, Orientation $orientation): BarcodeElement {
+	private function matrixElement(BarcodeMatrix $matrix, float $moduleWidth, float $moduleHeight, Orientation $orientation, int $shiftX = 0, int $shiftY = 0): BarcodeElement {
+		$origin = $this->origin();
+
+		if (!$origin["typeset"]) {
+			$origin["x"] += $shiftX;
+			$origin["y"] += $shiftY;
+		}
+
 		return new BarcodeElement(
-			...$this->origin(),
+			...$origin,
 			matrix: $matrix,
 			moduleWidth: $moduleWidth,
 			moduleHeight: $moduleHeight,

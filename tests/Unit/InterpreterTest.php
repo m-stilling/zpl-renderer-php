@@ -229,6 +229,25 @@ test("QR mask parameter selects the mask pattern and defaults to 7", function ()
 		->and($two->matrix->toRows())->not->toBe($seven->matrix->toRows());
 });
 
+test("a ^FO QR code is shifted 10 dots by its orientation", function (string $orientation, int $x, int $y) {
+	$element = barcode("^XA^FO200,200^BQ{$orientation},2,6^FDdata^FS^XZ");
+
+	expect($element->x)->toBe($x)
+		->and($element->y)->toBe($y);
+})->with([
+	["N", 200, 210],
+	["I", 210, 200],
+	["R", 200, 200],
+	["B", 200, 200],
+]);
+
+test("a ^FT QR code is not shifted", function () {
+	$element = barcode("^XA^FT200,400^BQN,2,6^FDdata^FS^XZ");
+
+	expect($element->x)->toBe(200)
+		->and($element->y)->toBe(400);
+});
+
 test("2D symbols scale by their own magnification", function () {
 	$zpl = "^XA^BY3^FO0,0^BQN,2,5^FDx^FS^FO0,0^BXN,7^FDx^FS^FO0,0^B7N,9^FDx^FS^XZ";
 
