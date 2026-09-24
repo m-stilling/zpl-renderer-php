@@ -111,6 +111,23 @@ test("writes one PNG per label, numbered when there are several", function () {
 		->and(file_exists(cliDir() . "/two.png"))->toBeFalse();
 });
 
+test("tells when the input is a PDF, a PNG or another binary file", function () {
+	file_put_contents(cliDir() . "/a.pdf", "%PDF-1.4 ^XA^\x80\x30^XZ");
+	file_put_contents(cliDir() . "/a.png", "\x89PNG\r\n");
+	file_put_contents(cliDir() . "/a.bin", "^XA\0^XZ");
+
+	[$pdf, , $pdfError] = runCli([cliDir() . "/a.pdf", "pdf", "-"]);
+	[$png, , $pngError] = runCli([cliDir() . "/a.png", "pdf", "-"]);
+	[$bin, , $binError] = runCli([cliDir() . "/a.bin", "pdf", "-"]);
+
+	expect($pdf)->toBe(65)
+		->and($pdfError)->toContain("a PDF file, not ZPL")
+		->and($png)->toBe(65)
+		->and($pngError)->toContain("a PNG image, not ZPL")
+		->and($bin)->toBe(65)
+		->and($binError)->toContain("a binary file, not ZPL");
+});
+
 test("rejects an unknown format and a missing input", function () {
 	[$format, , $formatError] = runCli([cliDir() . "/label.zpl", "svg"]);
 	[$missing] = runCli([cliDir() . "/nope.zpl", "pdf"]);

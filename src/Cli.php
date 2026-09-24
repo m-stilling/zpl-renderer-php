@@ -86,6 +86,14 @@ class Cli {
 			return 66;
 		}
 
+		$kind = $this->binaryKind($zpl);
+
+		if ($kind !== null) {
+			fwrite($stderr, "{$input} is {$kind}, not ZPL.\n");
+
+			return 65;
+		}
+
 		try {
 			$outputs = $format === "pdf" ? [Zpl::toPdf($zpl, $options)] : Zpl::toPngs($zpl, $options);
 		} catch (\Throwable $exception) {
@@ -140,6 +148,21 @@ class Cli {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * What a non-text input looks like, or null when it can be ZPL.
+	 */
+	private function binaryKind(string $data): ?string {
+		if (str_starts_with($data, "%PDF")) {
+			return "a PDF file";
+		}
+
+		if (str_starts_with($data, "\x89PNG")) {
+			return "a PNG image";
+		}
+
+		return str_contains($data, "\0") ? "a binary file" : null;
 	}
 
 	/**

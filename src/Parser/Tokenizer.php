@@ -51,7 +51,9 @@ class Tokenizer {
 			}
 
 			if (!ctype_alnum(str_replace("@", "", $name))) {
-				throw new ParseException("Invalid command name \"{$name}\" at offset " . ($i - 2) . ".");
+				$shown = preg_replace_callback('/[^\x20-\x7E]/', fn (array $m): string => sprintf("\\x%02X", ord($m[0])), $name) ?? $name;
+
+				throw new ParseException("Invalid command name \"{$shown}\" at offset " . ($i - strlen($name)) . ".");
 			}
 
 			$start = $i;

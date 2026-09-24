@@ -63,7 +63,11 @@ test("^CC, ^CT and ^CD change the prefixes and the delimiter for the rest of the
 
 test("rejects a command name that is not alphanumeric", function () {
 	(new Tokenizer())->tokenize("^X-");
-})->throws(ParseException::class);
+})->throws(ParseException::class, 'Invalid command name "X-" at offset 1.');
+
+test("shows unprintable bytes in a command name as hex", function () {
+	(new Tokenizer())->tokenize("^XA^\x80\x30");
+})->throws(ParseException::class, 'Invalid command name "\x800" at offset 4.');
 
 test("command accessors give typed values with defaults", function () {
 	$command = (new Tokenizer())->tokenize("^BCN,,Y,N,,A")[0];
