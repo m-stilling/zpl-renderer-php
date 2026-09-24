@@ -40,7 +40,8 @@
 	},
 	"scripts": {
 		"test": "pest",
-		"analyse": "phpstan analyse"
+		"analyse": "phpstan analyse",
+		"examples": "php examples/refresh.php"
 	},
 	"config": {
 		"allow-plugins": {

@@ -77,10 +77,10 @@ Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^B
 
 ## Examples
 
-The [examples](examples) folder holds sample labels: a shipping label, every barcode type, shapes and fonts, graphics, and a stored format with `^FN` fields. Render one with:
+The [examples](examples) folder holds sample labels: a shipping label, every barcode type, shapes and fonts, graphics, and a stored format with `^FN` fields. The rendered PDF of each one sits next to it. Render them again with:
 
 ```
-vendor/bin/zpl examples/shipping-label.zpl pdf
+composer examples
 ```
 
 ## Development
