@@ -41,6 +41,57 @@ file_put_contents('label.png', Zpl::toPng($zpl, $options));
 - `Zpl::toPngs()` returns a list with one PNG per label.
 - `Zpl::parse()` returns the interpreted labels as a list of `Label` objects with their elements, for example to feed a different renderer.
 
+The `$options` argument is optional. Without it, every method uses `new Options()`.
+
+### Labels and elements
+
+`Zpl::parse()` returns one `Label` per `^XA ... ^XZ` format. Every position and size in the model is in printer dots.
+
+| Property | Type | Meaning |
+| --- | --- | --- |
+| `width`, `height` | `int` | Label size in dots. |
+| `dpmm` | `int` | Print density in dots per millimeter. |
+| `elements` | `list<Element>` | The fields on the label, in ZPL order. |
+| `quantity` | `int` | Number of copies from `^PQ`. |
+| `inverted` | `bool` | `^POI`: the label prints upside down. |
+| `mirrored` | `bool` | `^PMY`: the label prints mirrored. |
+
+Every element has `x` and `y`, an `orientation` (`Normal`, `Rotated`, `Inverted` or `BottomUp`), `reverse` from `^FR` or `^LR`, `typeset` when the origin came from `^FT`, and a `justification`. The subclasses hold the rest.
+
+| Class | Command | Properties |
+| --- | --- | --- |
+| `TextElement` | `^FD` | `text` in UTF-8, `font` as a `FontSpec` with the font id and the cell size, `block` as a `FieldBlock` when `^FB` is set. |
+| `BarcodeElement` | `^B...` | `matrix` of modules, `moduleWidth` and `moduleHeight` in dots, `text` of the interpretation line, `textAbove`. |
+| `BoxElement` | `^GB` | `width`, `height`, `thickness`, `rounding`, `black`. |
+| `CircleElement` | `^GC` | `diameter`, `thickness`, `black`. |
+| `EllipseElement` | `^GE` | `width`, `height`, `thickness`, `black`. |
+| `DiagonalElement` | `^GD` | `width`, `height`, `thickness`, `black`, `rightLeaning`. |
+| `ImageElement` | `^GF`, `^XG`, `^IM`, `~DY` | `bitmap` with one bit per dot, `magnificationX`, `magnificationY`. |
+
+```php
+use Stilling\Zpl\Model\TextElement;
+
+foreach (Zpl::parse($zpl) as $label) {
+    foreach ($label->elements as $element) {
+        if ($element instanceof TextElement) {
+            echo "{$element->text} at {$element->x},{$element->y}\n";
+        }
+    }
+}
+```
+
+### Errors
+
+Every exception the package throws implements `Stilling\Zpl\Exceptions\ZplException`. Catch that interface to catch them all.
+
+| Exception | Thrown when |
+| --- | --- |
+| `ParseException` | The ZPL is malformed: an invalid command name, or invalid `^GF` data. |
+| `UnsupportedException` | The input uses a feature the package does not render, or the `gd` extension is missing for PNG output. |
+| `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, or a label index that does not exist. |
+
+Invalid `Options` values throw `InvalidArgumentException` from the constructor.
+
 ### Options
 
 | Option | Default | Effect |
@@ -58,7 +109,7 @@ file_put_contents('label.png', Zpl::toPng($zpl, $options));
 | `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H. |
 | `monoBoldFontFile` | Roboto Mono Bold | TrueType file drawn for font B. |
 
-`Options::inches(8, 4, 6)` builds the options from a label size in inches.
+`Options::inches(8, 4, 6)` builds the options from a label size in inches. An `Options` object is immutable. To change a setting, construct a new one.
 
 ### Command line
 
