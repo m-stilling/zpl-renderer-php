@@ -115,6 +115,37 @@ test("bitmap fonts draw with their capitals inside the cell", function () {
 		->and(blackPixels($image, 0, 0, 300, 19))->toBe(0);
 });
 
+test("the same character draws the same pixels wherever it appears", function () {
+	$image = png("^XA^PW400^LL60^FO3,10^A0N,33,31^FDHHHHHHHH^FS^XZ");
+	$glyphs = [];
+	$current = "";
+
+	for ($x = 0; $x < 400; $x++) {
+		$column = "";
+
+		for ($y = 0; $y < 60; $y++) {
+			$column .= isBlack($image, $x, $y) ? "1" : "0";
+		}
+
+		if (str_contains($column, "1")) {
+			$current .= $column;
+		} elseif ($current !== "") {
+			$glyphs[] = $current;
+			$current = "";
+		}
+	}
+
+	expect($glyphs)->toHaveCount(8)->and(array_unique($glyphs))->toHaveCount(1);
+});
+
+test("the capital letters of font 0 are a whole number of pixels tall and sit on the baseline", function () {
+	$image = png("^XA^PW200^LL60^FT10,50^A0N,27,27^FDH^FS^XZ");
+	$rows = array_values(array_filter(range(0, 59), fn (int $y): bool => blackPixels($image, 0, $y, 200, $y + 1) > 0));
+
+	expect($rows[count($rows) - 1])->toBe(49)
+		->and(count($rows))->toBe((int) round(27 * 0.8));
+});
+
 test("rotated text runs down from the origin", function () {
 	$image = png("^XA^PW200^LL200^FO50,50^A0R,30,30^FDHello^FS^XZ");
 

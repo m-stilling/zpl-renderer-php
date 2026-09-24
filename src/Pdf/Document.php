@@ -2,14 +2,15 @@
 
 namespace Stilling\Zpl\Pdf;
 
+use Stilling\Zpl\Font\TrueTypeFont;
 use Stilling\Zpl\Graphics\Bitmap;
 
 /**
  * A minimal PDF writer: pages with content streams, the fonts, an extended
  * graphics state for reverse printing, and one-bit image masks.
  *
- * The scalable font is the core Helvetica-Bold. The fixed-pitch fonts are
- * TrueType files embedded in full when a page uses them.
+ * Fonts are TrueType files. A document embeds a font only when a page draws
+ * with it, and then only the glyphs of the characters it draws.
  */
 class Document {
 	public const string FONT_SCALABLE = "F1";
@@ -30,28 +31,27 @@ class Document {
 	/** @var array<string, int> image resource name => object number */
 	private array $images = [];
 
-	/** @var array<string, true> font resource names any page uses */
+	/** @var array<string, array{string, array<int, true>}> font file and the WinAnsi codes drawn with it, by resource name */
 	private array $usedFonts = [];
 
 	private int $resourcesId;
 
 	private int $pagesId;
 
-	public function __construct(
-		/** TrueType file for the fixed-pitch font. */
-		private readonly string $monoFontFile,
-		/** TrueType file for the bold fixed-pitch font. */
-		private readonly string $monoBoldFontFile,
-	) {
+	public function __construct() {
 		$this->pagesId = $this->reserve();
 		$this->resourcesId = $this->reserve();
 	}
 
 	/**
-	 * Note that a page draws with a font, so the font gets embedded.
+	 * Note that a page draws text with a font, so the glyphs of that text get embedded.
 	 */
-	public function useFont(string $resource): void {
-		$this->usedFonts[$resource] = true;
+	public function useFont(string $resource, string $file, string $winAnsi): void {
+		$this->usedFonts[$resource] ??= [$file, []];
+
+		foreach (unpack("C*", $winAnsi) ?: [] as $code) {
+			$this->usedFonts[$resource][1][$code] = true;
+		}
 	}
 
 	/**
@@ -84,16 +84,11 @@ class Document {
 	}
 
 	public function render(): string {
-		$fonts = " /" . self::FONT_SCALABLE . " " . $this->add(
-			"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
-		) . " 0 R";
+		$fonts = "";
+		ksort($this->usedFonts);
 
-		if (isset($this->usedFonts[self::FONT_MONO])) {
-			$fonts .= " /" . self::FONT_MONO . " " . $this->addTrueType($this->monoFontFile) . " 0 R";
-		}
-
-		if (isset($this->usedFonts[self::FONT_MONO_BOLD])) {
-			$fonts .= " /" . self::FONT_MONO_BOLD . " " . $this->addTrueType($this->monoBoldFontFile) . " 0 R";
+		foreach ($this->usedFonts as $resource => [$file, $codes]) {
+			$fonts .= " /{$resource} " . $this->addTrueType($file, array_keys($codes)) . " 0 R";
 		}
 
 		$reverse = $this->add("<< /Type /ExtGState /BM /Difference >>");
@@ -136,17 +131,23 @@ class Document {
 	}
 
 	/**
-	 * Embed a TrueType file and return the object number of its font dictionary.
+	 * Embed the glyphs of a TrueType file that the given WinAnsi codes need,
+	 * and return the object number of its font dictionary.
+	 *
+	 * @param list<int> $codes
 	 */
-	private function addTrueType(string $file): int {
-		$font = new TrueTypeFont($file);
+	private function addTrueType(string $file, array $codes): int {
+		$font = TrueTypeFont::load($file);
+		sort($codes);
+		$subset = $font->subset($codes);
+		$name = self::subsetTag($codes) . "+" . $font->postScriptName;
 		$program = $this->add(
-			"<< /Length1 " . strlen($font->data) . " /Filter /FlateDecode /Length %d >>",
-			self::deflate($font->data),
+			"<< /Length1 " . strlen($subset) . " /Filter /FlateDecode /Length %d >>",
+			self::deflate($subset),
 		);
 		$bbox = implode(" ", $font->bbox);
 		$descriptor = $this->add(
-			"<< /Type /FontDescriptor /FontName /{$font->postScriptName} /Flags " . $font->flags()
+			"<< /Type /FontDescriptor /FontName /{$name} /Flags " . $font->flags()
 			. " /FontBBox [{$bbox}] /ItalicAngle " . self::number($font->italicAngle)
 			. " /Ascent {$font->ascent} /Descent {$font->descent} /CapHeight {$font->capHeight}"
 			. " /StemV " . ($font->bold ? 120 : 80) . " /FontFile2 {$program} 0 R >>",
@@ -154,9 +155,26 @@ class Document {
 		$widths = implode(" ", $font->widths);
 
 		return $this->add(
-			"<< /Type /Font /Subtype /TrueType /BaseFont /{$font->postScriptName} /FirstChar 32 /LastChar 255"
+			"<< /Type /Font /Subtype /TrueType /BaseFont /{$name} /FirstChar 32 /LastChar 255"
 			. " /Widths [{$widths}] /Encoding /WinAnsiEncoding /FontDescriptor {$descriptor} 0 R >>",
 		);
+	}
+
+	/**
+	 * The six capital letters that mark a font name as a subset, derived from the glyphs it holds.
+	 *
+	 * @param list<int> $codes
+	 */
+	private static function subsetTag(array $codes): string {
+		$hash = crc32(pack("C*", ...$codes));
+		$tag = "";
+
+		for ($i = 0; $i < 6; $i++) {
+			$tag .= chr(ord("A") + $hash % 26);
+			$hash = intdiv($hash, 26);
+		}
+
+		return $tag;
 	}
 
 	/**

@@ -3,8 +3,8 @@
 namespace Stilling\Zpl\Renderer;
 
 use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\FontMetrics;
 use Stilling\Zpl\Font\ResolvedFont;
+use Stilling\Zpl\Font\Typeface;
 use Stilling\Zpl\Font\ZebraFont;
 use Stilling\Zpl\Model\BarcodeElement;
 use Stilling\Zpl\Model\BoxElement;
@@ -27,14 +27,14 @@ class PdfRenderer {
 	public function __construct(
 		private readonly Options $options,
 	) {
-		$this->document = new Document($this->options->monoFontFile, $this->options->monoBoldFontFile);
+		$this->document = new Document();
 	}
 
 	/**
 	 * @param list<Label> $labels
 	 */
 	public function render(array $labels): string {
-		$this->document = new Document($this->options->monoFontFile, $this->options->monoBoldFontFile);
+		$this->document = new Document();
 
 		foreach ($labels as $label) {
 			$content = $this->renderLabel($label);
@@ -101,7 +101,7 @@ class PdfRenderer {
 	 * @return array{float, float, string, float} width, height, content, anchor
 	 */
 	private function text(TextElement $element): array {
-		$font = ZebraFont::resolve($element->font, $this->options->scalableFontCondense);
+		$font = ZebraFont::resolve($element->font, $this->options);
 		$layout = TextLayout::layout($element, $font);
 		$body = "";
 
@@ -117,12 +117,12 @@ class PdfRenderer {
 	}
 
 	private function textLine(ResolvedFont $font, string $winAnsi, float $x, float $baseline, float $wordSpacing = 0.0): string {
-		$resource = match ($font->pdfFont) {
-			FontMetrics::MONO_BOLD => Document::FONT_MONO_BOLD,
-			FontMetrics::MONO => Document::FONT_MONO,
-			default => Document::FONT_SCALABLE,
+		$resource = match ($font->typeface) {
+			Typeface::Scalable => Document::FONT_SCALABLE,
+			Typeface::MonoBold => Document::FONT_MONO_BOLD,
+			Typeface::Mono => Document::FONT_MONO,
 		};
-		$this->document->useFont($resource);
+		$this->document->useFont($resource, $font->typeface->file($this->options), $winAnsi);
 		$size = Document::number($font->size);
 		$scale = Document::number($font->horizontalScale * 100);
 		$spacing = $wordSpacing > 0 ? Document::number($wordSpacing / $font->horizontalScale) . " Tw " : "";
@@ -154,7 +154,7 @@ class PdfRenderer {
 	 * @return array{float, float, string, float}
 	 */
 	private function barcode(BarcodeElement $element): array {
-		$layout = new BarcodeLayout($element);
+		$layout = new BarcodeLayout($element, $this->options);
 		$body = "";
 
 		if ($layout->font !== null && $layout->text !== null) {

@@ -7,6 +7,7 @@ use Stilling\Zpl\Font\ResolvedFont;
 use Stilling\Zpl\Font\ZebraFont;
 use Stilling\Zpl\Model\BarcodeElement;
 use Stilling\Zpl\Model\FontSpec;
+use Stilling\Zpl\Options;
 
 /**
  * The geometry of a barcode field in its local box: where the bars go and
@@ -38,7 +39,7 @@ class BarcodeLayout {
 
 	public readonly float $textBaseline;
 
-	public function __construct(BarcodeElement $element) {
+	public function __construct(BarcodeElement $element, Options $options) {
 		$this->barsWidth = $element->width();
 		$this->barsHeight = $element->height();
 		$textHeight = 0.0;
@@ -50,7 +51,7 @@ class BarcodeLayout {
 
 		if ($element->text !== null && $element->text !== "") {
 			$magnification = max(1, (int) round($element->moduleWidth));
-			$font = ZebraFont::resolve(new FontSpec("A", 9 * $magnification, 5 * $magnification));
+			$font = ZebraFont::resolve(new FontSpec("A", 9 * $magnification, 5 * $magnification), $options);
 			$gap = self::GAP_PER_MODULE * $magnification;
 			$text = Encoding::toWinAnsi($element->text);
 			$textHeight = $font->lineHeight + $gap;

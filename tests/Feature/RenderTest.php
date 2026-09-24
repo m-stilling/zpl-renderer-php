@@ -4,14 +4,14 @@ use Stilling\Zpl\Options;
 use Stilling\Zpl\Zpl;
 
 /**
- * Decompress every non-image content stream of a PDF.
+ * Decompress every content stream of a PDF, leaving out images and font files.
  */
 function contentStreams(string $pdf): string {
 	preg_match_all('/<<([^>]*)>>\s*stream\n(.*?)\nendstream/s', $pdf, $matches, PREG_SET_ORDER);
 	$streams = "";
 
 	foreach ($matches as $match) {
-		if (!str_contains($match[1], "/Image")) {
+		if (!str_contains($match[1], "/Image") && !str_contains($match[1], "/Length1")) {
 			$streams .= gzuncompress($match[2]) . "\n";
 		}
 	}
@@ -65,7 +65,7 @@ test("text is placed with a flipped text matrix at the baseline", function () {
 	$content = contentStreams(Zpl::toPdf("^XA^FO100,200^A0N,40,40^FDHi^FS^XZ"));
 
 	expect($content)->toContain("1 0 0 1 100 200 cm")
-		->and($content)->toContain("/F1 44 Tf")
+		->and($content)->toContain("/F1 45.007 Tf")
 		->and($content)->toContain("1 0 0 -1 0 32 Tm (Hi) Tj");
 });
 
@@ -134,19 +134,29 @@ test("images are image masks drawn top-down", function () {
 		->and(contentStreams($pdf))->toContain("q 8 0 0 -2 0 2 cm /Im1 Do Q");
 });
 
-test("the fixed-pitch fonts are embedded only when a page uses them", function () {
-	$scalableOnly = Zpl::toPdf("^XA^FO0,0^A0N,20,20^FDx^FS^XZ");
+test("fonts are embedded as subsets, and only when a page uses them", function () {
+	$scalable = Zpl::toPdf("^XA^FO0,0^A0N,20,20^FDx^FS^XZ");
 	$mono = Zpl::toPdf("^XA^FO0,0^AAN,9,5^FDx^FS^XZ");
 	$monoBold = Zpl::toPdf("^XA^FO0,0^ABN,11,7^FDx^FS^XZ");
 
-	expect($scalableOnly)->not->toContain("/FontFile2")
-		->and($scalableOnly)->toContain("/BaseFont /Helvetica-Bold")
-		->and($mono)->toContain("/Subtype /TrueType /BaseFont /RobotoMono-Regular")
-		->and($mono)->toContain("/FontFile2")
+	expect($scalable)->toMatch('~/Subtype /TrueType /BaseFont /[A-Z]{6}\+RobotoCondensed-Bold ~')
+		->and($scalable)->toContain("/FontFile2")
+		->and($scalable)->not->toContain("RobotoMono")
+		->and($mono)->toMatch('~/Subtype /TrueType /BaseFont /[A-Z]{6}\+RobotoMono-Regular ~')
 		->and($mono)->toContain("/Flags 33 ")
+		->and($mono)->not->toContain("RobotoCondensed")
 		->and($mono)->not->toContain("RobotoMono-Bold")
-		->and($monoBold)->toContain("/BaseFont /RobotoMono-Bold")
-		->and(strlen($mono))->toBeGreaterThan(50000);
+		->and($monoBold)->toContain("+RobotoMono-Bold")
+		->and(strlen($scalable))->toBeLessThan(20000)
+		->and(strlen($mono))->toBeLessThan(20000)
+		->and(Zpl::toPdf("^XA^FO0,0^GB10,10,10^FS^XZ"))->not->toContain("/FontFile2");
+});
+
+test("font 0 is drawn with the horizontal scale of the requested width", function () {
+	$content = contentStreams(Zpl::toPdf("^XA^FO0,0^A0N,40,80^FDx^FS^XZ"));
+
+	expect($content)->toContain("/F1 ")
+		->and($content)->toContain("177.4 Tz");
 });
 
 test("barcodes are rectangles in dots with the interpretation line below", function () {

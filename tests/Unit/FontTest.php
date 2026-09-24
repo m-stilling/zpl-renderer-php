@@ -1,7 +1,7 @@
 <?php
 
 use Stilling\Zpl\Font\Encoding;
-use Stilling\Zpl\Font\FontMetrics;
+use Stilling\Zpl\Font\Typeface;
 use Stilling\Zpl\Font\ZebraFont;
 use Stilling\Zpl\Model\FieldBlock;
 use Stilling\Zpl\Model\FontSpec;
@@ -10,12 +10,13 @@ use Stilling\Zpl\Model\TextJustification;
 use Stilling\Zpl\Renderer\TextLayout;
 
 test("the scalable font keeps the requested height as its cell and condenses the width", function () {
-	$font = ZebraFont::resolve(new FontSpec("0", 40, 40), 0.85);
+	$font = ZebraFont::resolve(new FontSpec("0", 40, 40));
 
-	expect($font->pdfFont)->toBe(FontMetrics::SCALABLE)
+	expect($font->typeface)->toBe(Typeface::Scalable)
 		->and($font->lineHeight)->toBe(40.0)
 		->and($font->ascent + $font->descent)->toBe(40.0)
-		->and($font->width("H"))->toEqualWithDelta(0.722 * 40 * 0.85, 0.01);
+		->and($font->capHeight())->toEqualWithDelta(32.0, 0.001)
+		->and($font->width("H"))->toEqualWithDelta($font->face->widths[72] / 1000 * $font->size * 0.887, 0.001);
 });
 
 test("a wider request stretches the scalable font", function () {
@@ -30,7 +31,7 @@ test("bitmap fonts magnify in whole steps and keep their pitch", function () {
 	$two = ZebraFont::resolve(new FontSpec("A", 18, 10));
 	$rounded = ZebraFont::resolve(new FontSpec("A", 20, 12));
 
-	expect($one->pdfFont)->toBe(FontMetrics::MONO)
+	expect($one->typeface)->toBe(Typeface::Mono)
 		->and($one->lineHeight)->toBe(9.0)
 		->and($one->width("AB"))->toEqualWithDelta(12.0, 0.001)
 		->and($two->lineHeight)->toBe(18.0)
@@ -39,14 +40,14 @@ test("bitmap fonts magnify in whole steps and keep their pitch", function () {
 });
 
 test("fonts B and H are bold or upper-case only", function () {
-	expect(ZebraFont::resolve(new FontSpec("B", 11))->pdfFont)->toBe(FontMetrics::MONO_BOLD)
+	expect(ZebraFont::resolve(new FontSpec("B", 11))->typeface)->toBe(Typeface::MonoBold)
 		->and(ZebraFont::resolve(new FontSpec("B", 11))->uppercase)->toBeTrue()
 		->and(ZebraFont::resolve(new FontSpec("H", 21))->uppercase)->toBeTrue()
 		->and(ZebraFont::resolve(new FontSpec("D", 18))->uppercase)->toBeFalse();
 });
 
 test("unknown font ids fall back to the scalable font", function () {
-	expect(ZebraFont::resolve(new FontSpec("Q", 0))->pdfFont)->toBe(FontMetrics::SCALABLE)
+	expect(ZebraFont::resolve(new FontSpec("Q", 0))->typeface)->toBe(Typeface::Scalable)
 		->and(ZebraFont::resolve(new FontSpec("Q", 0))->lineHeight)->toBe(15.0);
 });
 

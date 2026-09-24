@@ -3,12 +3,13 @@
 namespace Stilling\Zpl\Font;
 
 /**
- * A ZPL font request turned into PDF drawing parameters. All lengths are in dots.
+ * A ZPL font request turned into drawing parameters. All lengths are in dots.
  */
 class ResolvedFont {
 	public function __construct(
-		/** PDF base font name. */
-		public readonly string $pdfFont,
+		public readonly Typeface $typeface,
+		/** The font file the glyphs and advance widths come from. */
+		public readonly TrueTypeFont $face,
 		/** Font size in dots. */
 		public readonly float $size,
 		/** Horizontal scaling as a factor, 1.0 for none. */
@@ -28,6 +29,13 @@ class ResolvedFont {
 	 * Width of a WinAnsi string in dots, after horizontal scaling.
 	 */
 	public function width(string $winAnsi): float {
-		return FontMetrics::stringWidth($this->pdfFont, $winAnsi) * $this->size * $this->horizontalScale;
+		return $this->face->stringWidth($winAnsi) * $this->size * $this->horizontalScale;
+	}
+
+	/**
+	 * Height of the capital letters in dots.
+	 */
+	public function capHeight(): float {
+		return $this->face->capHeight / 1000 * $this->size;
 	}
 }

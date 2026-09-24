@@ -8,7 +8,7 @@ Parse ZPL label code and render it to vector PDF or to PNG, without a printer an
 composer require stilling/zpl
 ```
 
-Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension with FreeType support; PDF output does not.
+Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the `gd` extension; PDF output does not.
 
 <table>
 <tr>
@@ -102,11 +102,11 @@ file_put_contents('label.png', Zpl::toPng($zpl, $options));
 | `honorLabelSize` | `true` | Let `^PW` and `^LL` change the page size. |
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
 | `maxPages` | `1000` | Upper bound on pages per PDF. |
-| `scalableFontCondense` | `0.85` | Horizontal scale of font 0 relative to Helvetica-Bold. |
+| `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |
 | `pixelsPerDot` | `1` | Pixels per printer dot in PNG output, 1 to 8. |
-| `scalableFontFile` | Roboto Condensed Bold | TrueType file drawn for font 0 in PNG output. |
-| `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H in PNG output. |
-| `monoBoldFontFile` | Roboto Mono Bold | TrueType file drawn for font B in PNG output. |
+| `scalableFontFile` | Roboto Condensed Bold | TrueType file drawn for font 0. |
+| `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H. |
+| `monoBoldFontFile` | Roboto Mono Bold | TrueType file drawn for font B. |
 
 `Options::inches(8, 4, 6)` builds the options from a label size in inches.
 
@@ -169,9 +169,11 @@ Unknown commands are ignored, like the printer ignores them. `^BD` MaxiCode, `^B
 
 ## Fonts
 
-Font 0 is drawn with Helvetica-Bold in the PDF, condensed to the width of CG Triumvirate Bold Condensed, and with [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold in the PNG. Nothing is embedded for it, so a PDF with only font 0 text is a few kilobytes.
+Font 0 is drawn with [Roboto Condensed](https://github.com/googlefonts/roboto-2) Bold, at the width of CG Triumvirate Bold Condensed. Fonts A to H are drawn with [Roboto Mono](https://github.com/googlefonts/robotomono), at the cell size and pitch of the printer bitmap fonts. The font files sit in `resources/fonts` with their licenses.
 
-Fonts A to H are drawn with [Roboto Mono](https://github.com/googlefonts/robotomono) in both outputs, at the cell size and pitch of the printer bitmap fonts. The PDF embeds the font file when a page uses it, which adds about 70 KB per weight. The font files sit in `resources/fonts` with their licenses. Both renderers lay text out with the same metrics, so words start and end at the same dots in the PDF and in the PNG. Point the `monoFontFile` and `monoBoldFontFile` options at other TrueType files to draw with different glyphs in both outputs; `scalableFontFile` changes the PNG only.
+The PDF and the PNG draw the same glyphs from the same font files, at the same positions. The PDF embeds only the characters that the document draws, so a font adds a few kilobytes. The PNG puts every character on a whole pixel, so the same character has the same pixels wherever it appears.
+
+Point the `scalableFontFile`, `monoFontFile` and `monoBoldFontFile` options at other TrueType files to draw with different glyphs. The file must have TrueType outlines (a `glyf` table). Set `scalableFontCondense` to the horizontal scale that gives the new font 0 file the width of the printer font.
 
 ## Differences from a printer
 

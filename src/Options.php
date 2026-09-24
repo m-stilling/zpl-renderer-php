@@ -21,15 +21,15 @@ class Options {
 		public readonly bool $honorQuantity = true,
 		/** Upper bound on pages per PDF document, so a stray ^PQ99999 cannot exhaust memory. */
 		public readonly int $maxPages = 1000,
-		/** Horizontal scale applied to the scalable font 0, relative to Helvetica-Bold. */
-		public readonly float $scalableFontCondense = 0.85,
+		/** Horizontal scale applied to the scalable font 0, relative to the natural width of scalableFontFile. */
+		public readonly float $scalableFontCondense = 0.887,
 		/** Pixels per printer dot in PNG output. */
 		public readonly int $pixelsPerDot = 1,
-		/** TrueType file drawn for the scalable font 0 in PNG output. */
+		/** TrueType file drawn for the scalable font 0. */
 		public readonly string $scalableFontFile = self::FONT_DIRECTORY . "/RobotoCondensed-Bold.ttf",
-		/** TrueType file drawn for the bitmap fonts A and C to H in PNG output. */
+		/** TrueType file drawn for the bitmap fonts A and C to H. */
 		public readonly string $monoFontFile = self::FONT_DIRECTORY . "/RobotoMono-Regular.ttf",
-		/** TrueType file drawn for the bold bitmap font B in PNG output. */
+		/** TrueType file drawn for the bold bitmap font B. */
 		public readonly string $monoBoldFontFile = self::FONT_DIRECTORY . "/RobotoMono-Bold.ttf",
 	) {
 		if (!in_array($this->dpmm, [6, 8, 12, 24], true)) {

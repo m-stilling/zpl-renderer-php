@@ -3,19 +3,19 @@
 namespace Stilling\Zpl\Font;
 
 use Stilling\Zpl\Model\FontSpec;
+use Stilling\Zpl\Options;
 
 /**
- * Maps the built-in printer fonts to PDF core fonts.
+ * Maps the built-in printer fonts to the font files they are drawn with.
  *
- * Font 0 is the scalable CG Triumvirate Bold Condensed; it is drawn with
- * Helvetica-Bold, condensed horizontally. Fonts A to H are fixed-pitch bitmap
- * fonts that magnify in whole steps; they are drawn with Courier scaled to the
- * same cell size and pitch. Fonts B and H hold capital letters only.
+ * Font 0 is the scalable CG Triumvirate Bold Condensed; it is drawn with the
+ * scalable font file, its capital letters reaching from the baseline to the
+ * top of the cell, and scaled horizontally by the requested width. Fonts A to
+ * H are fixed-pitch bitmap fonts that magnify in whole steps; they are drawn
+ * with the fixed-pitch font file scaled to the same cell size and pitch. Fonts
+ * B and H hold capital letters only.
  */
 class ZebraFont {
-	/** Point size of the scalable font relative to the requested height. */
-	public const float SCALABLE_SIZE = 1.1;
-
 	/** Fraction of the requested height at which the baseline of the scalable font sits. */
 	public const float SCALABLE_ASCENT = 0.8;
 
@@ -58,40 +58,46 @@ class ZebraFont {
 		return self::BITMAP_FONTS[strtoupper($id)][1] ?? 12;
 	}
 
-	public static function resolve(FontSpec $spec, float $condense = 0.85): ResolvedFont {
+	public static function resolve(FontSpec $spec, ?Options $options = null): ResolvedFont {
+		$options ??= new Options();
 		$id = strtoupper($spec->id);
 		$height = $spec->height > 0 ? $spec->height : self::defaultHeight($id);
 
 		if (isset(self::BITMAP_FONTS[$id])) {
-			return self::resolveBitmap($id, $height, $spec->width);
+			return self::resolveBitmap($id, $height, $spec->width, $options);
 		}
 
 		$width = $spec->width > 0 ? $spec->width : $height;
+		$face = TrueTypeFont::load(Typeface::Scalable->file($options));
+		$ascent = $height * self::SCALABLE_ASCENT;
 
 		return new ResolvedFont(
-			pdfFont: FontMetrics::SCALABLE,
-			size: $height * self::SCALABLE_SIZE,
-			horizontalScale: $condense * $width / $height / self::SCALABLE_SIZE,
-			ascent: $height * self::SCALABLE_ASCENT,
-			descent: $height * (1 - self::SCALABLE_ASCENT),
+			typeface: Typeface::Scalable,
+			face: $face,
+			size: $ascent / ($face->capHeight / 1000),
+			horizontalScale: $options->scalableFontCondense * $width / $height,
+			ascent: $ascent,
+			descent: $height - $ascent,
 			lineHeight: $height,
 		);
 	}
 
-	private static function resolveBitmap(string $id, int $height, int $width): ResolvedFont {
+	private static function resolveBitmap(string $id, int $height, int $width, Options $options): ResolvedFont {
 		[$baseHeight, $baseWidth, $gap] = self::BITMAP_FONTS[$id];
 		$scaleY = max(1, (int) round($height / $baseHeight));
 		$scaleX = $width > 0 ? max(1, (int) round($width / $baseWidth)) : $scaleY;
 		$cellHeight = $baseHeight * $scaleY;
 		$advance = ($baseWidth + $gap) * $scaleX;
-		$font = $id === "B" ? FontMetrics::MONO_BOLD : FontMetrics::MONO;
+		$typeface = $id === "B" ? Typeface::MonoBold : Typeface::Mono;
+		$face = TrueTypeFont::load($typeface->file($options));
 		$capHeight = $cellHeight * self::BITMAP_CAP_FRACTION;
-		$size = $capHeight / FontMetrics::CAP_HEIGHT[$font];
+		$size = $capHeight / ($face->capHeight / 1000);
 
 		return new ResolvedFont(
-			pdfFont: $font,
+			typeface: $typeface,
+			face: $face,
 			size: $size,
-			horizontalScale: $advance / (FontMetrics::charWidth($font, 32) / 1000 * $size),
+			horizontalScale: $advance / ($face->widths[32] / 1000 * $size),
 			ascent: $capHeight,
 			descent: $cellHeight - $capHeight,
 			lineHeight: $cellHeight,

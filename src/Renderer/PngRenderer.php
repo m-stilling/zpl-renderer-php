@@ -4,7 +4,6 @@ namespace Stilling\Zpl\Renderer;
 
 use Stilling\Zpl\Exceptions\RenderException;
 use Stilling\Zpl\Exceptions\UnsupportedException;
-use Stilling\Zpl\Font\FontMetrics;
 use Stilling\Zpl\Font\ResolvedFont;
 use Stilling\Zpl\Font\ZebraFont;
 use Stilling\Zpl\Graphics\Bitmap;
@@ -35,14 +34,11 @@ class PngRenderer {
 
 	private const int WHITE = 2;
 
-	/** GD sizes TrueType text in points at 96 dpi, so one pixel of em is 0.75 points. */
-	private const float POINTS_PER_PIXEL = 0.75;
+	/** Most glyph rasters kept for reuse. */
+	private const int GLYPH_CACHE_SIZE = 4096;
 
-	/** Factor by which text is drawn larger before it is reduced to one-bit pixels. */
-	private const int SUPERSAMPLE = 4;
-
-	/** @var array<string, float> cap height as a fraction of the em, by font file */
-	private static array $capHeights = [];
+	/** @var array<string, list<array{int, int, int}>> glyph rasters by font file, character and scale */
+	private static array $glyphs = [];
 
 	private int $scale = 1;
 
@@ -56,8 +52,8 @@ class PngRenderer {
 	public function __construct(
 		private readonly Options $options,
 	) {
-		if (!function_exists("imagecreate") || !function_exists("imagettftext")) {
-			throw new UnsupportedException("Rendering PNG requires the GD extension with FreeType support.");
+		if (!function_exists("imagecreate")) {
+			throw new UnsupportedException("Rendering PNG requires the GD extension.");
 		}
 	}
 
@@ -180,7 +176,7 @@ class PngRenderer {
 	}
 
 	private function text(\GdImage $layer, TextElement $element): void {
-		$font = ZebraFont::resolve($element->font, $this->options->scalableFontCondense);
+		$font = ZebraFont::resolve($element->font, $this->options);
 		$layout = TextLayout::layout($element, $font);
 		$matrix = Placement::matrix($element, $layout->width, $layout->height, $layout->ascent)->scaled($this->scale);
 
@@ -190,92 +186,59 @@ class PngRenderer {
 	}
 
 	/**
-	 * Draw a line word by word, each word squeezed to the width the metrics
-	 * give it, so the PNG lines up exactly like the PDF.
+	 * Draw a line glyph by glyph at the positions the metrics give, the same
+	 * positions the PDF uses. Every glyph starts on a whole pixel and the
+	 * capital letters are a whole number of pixels tall, so the same
+	 * character looks the same wherever it appears.
 	 */
 	private function textLine(\GdImage $layer, Matrix $matrix, Orientation $orientation, ResolvedFont $font, string $winAnsi, float $x, float $baseline, float $wordSpacing): void {
-		$space = $font->width(" ") + $wordSpacing;
+		$capHeight = $font->capHeight() * $this->scale;
+		$fit = max(1, round($capHeight)) / $capHeight;
+		$scaleY = $font->size * $this->scale * $fit;
+		$scaleX = $scaleY * $font->horizontalScale;
+		$file = $font->typeface->file($this->options);
+		$origin = (int) floor($x * $this->scale);
+		$pen = $x;
+		$runs = [];
 
-		foreach (explode(" ", $winAnsi) as $word) {
-			if ($word !== "") {
-				$this->word($layer, $matrix, $orientation, $font, $word, $x, $baseline);
-			}
+		foreach (unpack("C*", $winAnsi) ?: [] as $code) {
+			if ($code !== 32) {
+				$column = (int) round($pen * $this->scale) - $origin;
 
-			$x += $font->width($word) + $space;
-		}
-	}
-
-	/**
-	 * Draw a word at SUPERSAMPLE times its size, then reduce it to its place
-	 * in one step, so the threshold works on exact coverage and every stem
-	 * keeps the same width.
-	 */
-	private function word(\GdImage $layer, Matrix $matrix, Orientation $orientation, ResolvedFont $font, string $winAnsi, float $x, float $baseline): void {
-		$file = $this->fontFile($font);
-		$utf8 = mb_convert_encoding($winAnsi, "UTF-8", "Windows-1252");
-		$em = $font->ascent * $this->scale * self::SUPERSAMPLE / $this->capHeight($file);
-		$points = $em * self::POINTS_PER_PIXEL;
-		$box = imagettfbbox($points, 0, $file, $utf8);
-
-		if ($box === false) {
-			throw new RenderException("Cannot measure text with font {$file}.");
-		}
-
-		$left = (int) $box[0];
-		$naturalWidth = max(1, (int) $box[2] - $left) + 2 * self::SUPERSAMPLE;
-		$ascentRows = max(1, (int) ceil(-$box[7] / self::SUPERSAMPLE)) + 1;
-		$descentRows = max(0, (int) ceil($box[1] / self::SUPERSAMPLE)) + 1;
-		$rows = $ascentRows + $descentRows;
-		$targetWidth = max(1, (int) round($font->width($winAnsi) * $this->scale));
-		$glyphs = imagecreatetruecolor($naturalWidth, $rows * self::SUPERSAMPLE);
-		$squeezed = imagecreatetruecolor($targetWidth, $rows);
-
-		if ($glyphs === false || $squeezed === false) {
-			throw new RenderException("Cannot create an image for text.");
-		}
-
-		$white = (int) imagecolorallocate($glyphs, 255, 255, 255);
-		$black = (int) imagecolorallocate($glyphs, 0, 0, 0);
-		imagefill($glyphs, 0, 0, $white);
-		imagettftext($glyphs, $points, 0, self::SUPERSAMPLE - $left, $ascentRows * self::SUPERSAMPLE, $black, $file, $utf8);
-		imagecopyresampled($squeezed, $glyphs, 0, 0, 0, 0, $targetWidth, $rows, $naturalWidth, $rows * self::SUPERSAMPLE);
-
-		$this->place($layer, $this->threshold($squeezed), $matrix, $orientation, $x, $baseline - $ascentRows / $this->scale);
-	}
-
-	/**
-	 * Cap height of a TrueType file as a fraction of its em, measured once.
-	 */
-	private function capHeight(string $file): float {
-		if (!isset(self::$capHeights[$file])) {
-			$box = imagettfbbox(75, 0, $file, "H");
-			$cap = $box === false ? 0 : ($box[1] - $box[7]) / 100;
-			self::$capHeights[$file] = $cap > 0 ? $cap : FontMetrics::CAP_HEIGHT[FontMetrics::SCALABLE];
-		}
-
-		return self::$capHeights[$file];
-	}
-
-	/**
-	 * Turn a gray image into a layer-compatible one: dark pixels become black ink, the rest clear.
-	 */
-	private function threshold(\GdImage $gray): \GdImage {
-		$width = imagesx($gray);
-		$height = imagesy($gray);
-		$result = $this->layer($width, $height);
-
-		for ($y = 0; $y < $height; $y++) {
-			for ($x = 0; $x < $width; $x++) {
-				$color = imagecolorat($gray, $x, $y);
-				$luminance = 0.299 * (($color >> 16) & 0xFF) + 0.587 * (($color >> 8) & 0xFF) + 0.114 * ($color & 0xFF);
-
-				if ($luminance < 128) {
-					imagesetpixel($result, $x, $y, self::BLACK);
+				foreach ($this->glyphRuns($font, $file, $code, $scaleX, $scaleY) as [$row, $from, $to]) {
+					$runs[] = [$row, $from + $column, $to + $column];
 				}
 			}
+
+			$pen += $font->width(chr($code)) + ($code === 32 ? $wordSpacing : 0);
 		}
 
-		return $result;
+		if ($runs === []) {
+			return;
+		}
+
+		$top = min(array_column($runs, 0));
+		$left = min(array_column($runs, 1));
+		$image = $this->layer(max(array_column($runs, 2)) - $left + 1, max(array_column($runs, 0)) - $top + 1);
+
+		foreach ($runs as [$row, $from, $to]) {
+			imageline($image, $from - $left, $row - $top, $to - $left, $row - $top, self::BLACK);
+		}
+
+		$this->place($layer, $image, $matrix, $orientation, ($origin + $left) / $this->scale, $baseline + $top / $this->scale);
+	}
+
+	/**
+	 * @return list<array{int, int, int}>
+	 */
+	private function glyphRuns(ResolvedFont $font, string $file, int $code, float $scaleX, float $scaleY): array {
+		$key = sprintf("%s|%d|%.4F|%.4F", $file, $code, $scaleX, $scaleY);
+
+		if (count(self::$glyphs) >= self::GLYPH_CACHE_SIZE) {
+			self::$glyphs = [];
+		}
+
+		return self::$glyphs[$key] ??= GlyphRaster::runs($font->face->outline($code), $scaleX, $scaleY);
 	}
 
 	/**
@@ -324,20 +287,6 @@ class PngRenderer {
 		}
 
 		return $result;
-	}
-
-	private function fontFile(ResolvedFont $font): string {
-		$file = match ($font->pdfFont) {
-			FontMetrics::MONO_BOLD => $this->options->monoBoldFontFile,
-			FontMetrics::MONO => $this->options->monoFontFile,
-			default => $this->options->scalableFontFile,
-		};
-
-		if (!is_file($file)) {
-			throw new RenderException("Font file {$file} does not exist.");
-		}
-
-		return $file;
 	}
 
 	private function shape(\GdImage $layer, Element $element, Path $path, float $width, float $height, bool $black): void {
@@ -394,7 +343,7 @@ class PngRenderer {
 	}
 
 	private function barcode(\GdImage $layer, BarcodeElement $element): void {
-		$layout = new BarcodeLayout($element);
+		$layout = new BarcodeLayout($element, $this->options);
 		$matrix = Placement::matrix($element, $layout->width, $layout->height, $layout->anchor)->scaled($this->scale);
 
 		foreach ($element->matrix->bars as [$x, $y, $w, $h]) {

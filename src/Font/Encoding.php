@@ -3,7 +3,7 @@
 namespace Stilling\Zpl\Font;
 
 /**
- * Text conversion between the ZPL input and the WinAnsi bytes the PDF core fonts use.
+ * Text conversion between the ZPL input and the WinAnsi bytes that the fonts are drawn with.
  */
 class Encoding {
 	/**
