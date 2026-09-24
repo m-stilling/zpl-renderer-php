@@ -207,6 +207,7 @@ test("every supported symbology encodes", function (string $command, string $dat
 	["^B7N,4,3", "PDF417"],
 	["^B7N,4,3,,,Y", "Truncated"],
 	["^BON,4", "Aztec"],
+	["^B0N,4", "Aztec"],
 	["^BCN,50,Y,N,N,A", "auto 12345678"],
 	["^BCN,50,Y,N,N,U", "0034567890123456789"],
 	["^BCN,50,Y,N,N,D", "(01)09501101530003"],
