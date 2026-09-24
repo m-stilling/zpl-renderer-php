@@ -1,8 +1,8 @@
 {
 	"$schema": "https://getcomposer.org/schema.json",
 	"name": "stilling/zpl",
-	"description": "Parse and render ZPL label code: ZPL to vector PDF, without a printer or an online service.",
-	"keywords": ["zpl", "zebra", "pdf", "label", "barcode"],
+	"description": "Parse and render ZPL label code to vector PDF or PNG, without a printer or an online service.",
+	"keywords": ["zpl", "zebra", "pdf", "png", "label", "barcode"],
 	"license": "MIT",
 	"authors": [
 		{
@@ -25,7 +25,7 @@
 		"phpstan/phpstan": "^2.0"
 	},
 	"suggest": {
-		"ext-gd": "Required to decode PNG images sent with ~DY"
+		"ext-gd": "Required for PNG output and to decode PNG images sent with ~DY"
 	},
 	"bin": ["bin/zpl"],
 	"autoload": {

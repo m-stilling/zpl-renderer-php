@@ -96,8 +96,23 @@ test("takes the label size in inches or millimeters", function () {
 		->and($stderr)->toContain("--size");
 });
 
+test("writes one PNG per label, numbered when there are several", function () {
+	file_put_contents(cliDir() . "/two.zpl", "^XA^PW10^LL10^XZ^XA^PW20^LL20^XZ");
+
+	[$single] = runCli([cliDir() . "/label.zpl", "png", "--scale=2"]);
+	[$double, , $stderr] = runCli([cliDir() . "/two.zpl", "png"]);
+	$image = imagecreatefromstring((string) file_get_contents(cliDir() . "/label.png"));
+
+	expect($single)->toBe(0)
+		->and($image === false ? 0 : imagesx($image))->toBe(2 * 813)
+		->and($double)->toBe(0)
+		->and($stderr)->toContain("two-1.png")
+		->and(file_exists(cliDir() . "/two-2.png"))->toBeTrue()
+		->and(file_exists(cliDir() . "/two.png"))->toBeFalse();
+});
+
 test("rejects an unknown format and a missing input", function () {
-	[$format, , $formatError] = runCli([cliDir() . "/label.zpl", "png"]);
+	[$format, , $formatError] = runCli([cliDir() . "/label.zpl", "svg"]);
 	[$missing] = runCli([cliDir() . "/nope.zpl", "pdf"]);
 
 	expect($format)->toBe(64)

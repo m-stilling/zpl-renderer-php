@@ -2,7 +2,8 @@
 <?php
 
 /*
- * Render every .zpl file in this folder to a .pdf next to it.
+ * Render every .zpl file in this folder to a .pdf and a .png next to it.
+ * A file with several labels gets one PNG per label: name-1.png, name-2.png, ...
  *
  * Run it with:  composer examples
  */
@@ -12,7 +13,17 @@ require __DIR__ . "/../vendor/autoload.php";
 use Stilling\Zpl\Zpl;
 
 foreach (glob(__DIR__ . "/*.zpl") ?: [] as $file) {
-	$output = substr($file, 0, -4) . ".pdf";
-	file_put_contents($output, Zpl::toPdf((string) file_get_contents($file)));
-	echo basename($output), "\n";
+	$base = substr($file, 0, -4);
+	$zpl = (string) file_get_contents($file);
+
+	file_put_contents("{$base}.pdf", Zpl::toPdf($zpl));
+	echo basename($base), ".pdf\n";
+
+	$pngs = Zpl::toPngs($zpl);
+
+	foreach ($pngs as $index => $png) {
+		$output = count($pngs) === 1 ? "{$base}.png" : "{$base}-" . ($index + 1) . ".png";
+		file_put_contents($output, $png);
+		echo basename($output), "\n";
+	}
 }

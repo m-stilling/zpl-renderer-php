@@ -9,3 +9,4 @@
 /phpstan.neon     export-ignore
 /bin/zpl          text eol=lf
 *.pdf             binary
+*.ttf             binary
