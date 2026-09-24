@@ -289,6 +289,22 @@ test("^DF stores a format that ^XF recalls with ^FN values filled in", function 
 		->and(text($zpl, 1)->text)->toBe("default");
 });
 
+test("a stored format that recalls itself is recalled once", function () {
+	$zpl = "^XA^DFR:A.ZPL^FS^XFR:A.ZPL^FS^FO0,0^FDa^FS^XZ^XA^XFR:A.ZPL^FS^XZ";
+
+	expect(Zpl::parse($zpl))->toHaveCount(1)
+		->and(label($zpl)->elements)->toHaveCount(1);
+});
+
+test("stored formats that recall each other are each recalled once", function () {
+	$zpl = "^XA^DFR:A.ZPL^FS^FO0,0^FDa^FS^XFR:B.ZPL^FS^XZ"
+		. "^XA^DFR:B.ZPL^FS^FO0,0^FDb^FS^XFR:A.ZPL^FS^XZ"
+		. "^XA^XFR:A.ZPL^FS^XZ";
+
+	expect(array_map(fn (int $index): string => text($zpl, $index)->text, [0, 1]))->toBe(["a", "b"])
+		->and(label($zpl)->elements)->toHaveCount(2);
+});
+
 test("^PQ, ^PO and ^PM set the label flags", function () {
 	$label = label("^XA^PQ3^POI^PMY^XZ");
 

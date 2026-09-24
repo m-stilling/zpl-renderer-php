@@ -48,8 +48,14 @@ class Interpreter {
 
 	private Code128 $code128;
 
+	/** How deep ^XF recalls nest before a further ^XF is ignored. */
+	private const int MAX_RECALL_DEPTH = 8;
+
 	/** @var array<string, list<Command>> formats stored with ^DF */
 	private array $storedFormats = [];
+
+	/** @var array<string, true> names of the stored formats being recalled, outermost first */
+	private array $openRecalls = [];
 
 	private int $characterSet = 0;
 
@@ -573,21 +579,32 @@ class Interpreter {
 		);
 	}
 
+	/**
+	 * A format that is already being recalled, directly or through other
+	 * formats, is not recalled again, and recalls do not nest deeper than
+	 * MAX_RECALL_DEPTH. Both would otherwise loop forever or grow exponentially.
+	 */
 	private function recallFormat(Command $command): void {
-		$stored = $this->storedFormats[GraphicStore::normalize($command->arg(0))] ?? null;
+		$name = GraphicStore::normalize($command->arg(0));
+		$stored = $this->storedFormats[$name] ?? null;
 
-		if ($stored === null) {
+		if ($stored === null || isset($this->openRecalls[$name]) || count($this->openRecalls) >= self::MAX_RECALL_DEPTH) {
 			return;
 		}
 
+		$this->openRecalls[$name] = true;
 		$this->flushField();
 		$recalling = $this->recalling;
 		$this->recalling = false;
 
-		foreach ($stored as $storedCommand) {
-			if (!$storedCommand->is("DF")) {
-				$this->apply($storedCommand);
+		try {
+			foreach ($stored as $storedCommand) {
+				if (!$storedCommand->is("DF")) {
+					$this->apply($storedCommand);
+				}
 			}
+		} finally {
+			unset($this->openRecalls[$name]);
 		}
 
 		$this->flushField();
