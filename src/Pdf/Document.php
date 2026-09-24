@@ -111,7 +111,7 @@ class Document {
 		$kids = implode(" ", array_map(fn (int $id): string => "{$id} 0 R", $this->pages));
 		$this->objects[$this->pagesId] = "<< /Type /Pages /Kids [{$kids}] /Count " . count($this->pages) . " >>";
 		$catalog = $this->add("<< /Type /Catalog /Pages {$this->pagesId} 0 R >>");
-		$info = $this->add("<< /Producer (stilling/zpl) >>");
+		$info = $this->add("<< /Producer (stilling/zpl-renderer) >>");
 
 		$output = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
 		$offsets = [];
