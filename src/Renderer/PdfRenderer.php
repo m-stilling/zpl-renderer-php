@@ -78,10 +78,10 @@ class PdfRenderer {
 	private function renderElement(Element $element): string {
 		[$width, $height, $body, $anchor] = match (true) {
 			$element instanceof TextElement => $this->text($element),
-			$element instanceof BoxElement => $this->shape(Shapes::box($element), $element->width, $element->height, $element->black),
-			$element instanceof CircleElement => $this->shape(Shapes::circle($element), $element->diameter, $element->diameter, $element->black),
-			$element instanceof EllipseElement => $this->shape(Shapes::ellipse($element), $element->width, $element->height, $element->black),
-			$element instanceof DiagonalElement => $this->shape(Shapes::diagonal($element), $element->width, $element->height, $element->black),
+			$element instanceof BoxElement => $this->shape(Shapes::box($element), $element->width, $element->height, $element->black, $element->reverse),
+			$element instanceof CircleElement => $this->shape(Shapes::circle($element), $element->diameter, $element->diameter, $element->black, $element->reverse),
+			$element instanceof EllipseElement => $this->shape(Shapes::ellipse($element), $element->width, $element->height, $element->black, $element->reverse),
+			$element instanceof DiagonalElement => $this->shape(Shapes::diagonal($element), $element->width, $element->height, $element->black, $element->reverse),
 			$element instanceof ImageElement => $this->image($element),
 			$element instanceof BarcodeElement => $this->barcode($element),
 			default => [0, 0, "", 0],
@@ -136,8 +136,8 @@ class PdfRenderer {
 	/**
 	 * @return array{float, float, string, float}
 	 */
-	private function shape(Path $path, float $width, float $height, bool $black): array {
-		return [$width, $height, ($black ? "0 g\n" : "1 g\n") . $path->toPdf() . "f*\n", 0];
+	private function shape(Path $path, float $width, float $height, bool $black, bool $reverse): array {
+		return [$width, $height, ($black && !$reverse ? "0 g\n" : "1 g\n") . $path->toPdf() . "f*\n", 0];
 	}
 
 	/**

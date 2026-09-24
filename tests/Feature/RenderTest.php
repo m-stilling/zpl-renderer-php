@@ -101,6 +101,13 @@ test("reverse fields paint white in difference mode", function () {
 	expect($content)->toContain("/GSr gs 1 g 1 G");
 });
 
+test("a black shape in a reverse field paints white so that difference mode inverts it", function () {
+	$content = contentStreams(ZplRenderer::toPdf("^XA^PW100^LL100^FO0,0^GB100,50,50^FS^FO20,20^FR^GB20,60,60^FS^XZ"));
+
+	expect($content)->toContain("/GSr gs 1 g 1 G\n1 g\n0 0 60 60 re")
+		->and($content)->not->toContain("0 g\n0 0 60 60 re");
+});
+
 test("^LR reverses every field, and a field ^FR under it stays reversed", function () {
 	$content = contentStreams(ZplRenderer::toPdf("^XA^LRY^FO0,0^GB10,10,10^FS^FO0,0^FR^GB10,10,10^FS^XZ"));
 
