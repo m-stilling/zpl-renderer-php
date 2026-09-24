@@ -532,7 +532,7 @@ class Interpreter {
 			return;
 		}
 
-		$this->graphics->put($name, (new PngDecoder())->decode($this->objectBytes($data)));
+		$this->graphics->put($name, (new PngDecoder($this->options->getMaxGraphicBytes()))->decode($this->objectBytes($data)));
 	}
 
 	/**

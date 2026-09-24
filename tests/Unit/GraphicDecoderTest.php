@@ -4,6 +4,7 @@ use Stilling\Zpl\Exceptions\ParseException;
 use Stilling\Zpl\Graphics\Bitmap;
 use Stilling\Zpl\Graphics\GraphicDecoder;
 use Stilling\Zpl\Graphics\GraphicStore;
+use Stilling\Zpl\Graphics\PngDecoder;
 
 /**
  * @return list<string>
@@ -109,6 +110,34 @@ test("accepts a graphic at the byte limit", function () {
 	expect($decoder->decode(str_repeat("FF", 16), 1, 16)->height)->toBe(16)
 		->and($decoder->decode("FF" . str_repeat(":", 15), 1, 0)->height)->toBe(16)
 		->and($decoder->decode(":Z64:" . base64_encode((string) gzcompress(str_repeat("\0", 16))) . ":0000", 1, 0)->height)->toBe(16);
+});
+
+/**
+ * A PNG of the given size with a black left half, as bytes.
+ *
+ * @param positive-int $width
+ * @param positive-int $height
+ */
+function halfBlackPng(int $width, int $height): string {
+	$image = imagecreatetruecolor($width, $height);
+	imagefill($image, 0, 0, (int) imagecolorallocate($image, 255, 255, 255));
+	imagefilledrectangle($image, 0, 0, intdiv($width, 2) - 1, $height - 1, (int) imagecolorallocate($image, 0, 0, 0));
+
+	return pngBytes($image);
+}
+
+test("a PNG becomes a one-bit bitmap by luminance", function () {
+	$bitmap = (new PngDecoder())->decode(halfBlackPng(16, 2));
+
+	expect(rows($bitmap))->toBe(["########........", "########........"]);
+});
+
+test("rejects a PNG whose bitmap would be larger than the byte limit", function () {
+	(new PngDecoder(16))->decode(halfBlackPng(64, 3));
+})->throws(ParseException::class, "more than the limit of 16 bytes");
+
+test("accepts a PNG whose bitmap is at the byte limit", function () {
+	expect((new PngDecoder(16))->decode(halfBlackPng(64, 2))->height)->toBe(2);
 });
 
 test("graphic names ignore device, extension and case", function () {

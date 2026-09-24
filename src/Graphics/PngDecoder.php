@@ -2,16 +2,36 @@
 
 namespace Stilling\Zpl\Graphics;
 
+use Stilling\Zpl\Exceptions\ParseException;
 use Stilling\Zpl\Exceptions\UnsupportedException;
 
 /**
  * Turns a PNG (or any format GD reads) into a one-bit Bitmap by thresholding
  * the luminance. Transparent pixels count as white.
+ *
+ * An image whose one-bit form would be larger than maxBytes is rejected
+ * before GD decodes it.
  */
 class PngDecoder {
+	public function __construct(
+		private readonly int $maxBytes = GraphicDecoder::DEFAULT_MAX_BYTES,
+	) {
+		if ($maxBytes < 1) {
+			throw new \InvalidArgumentException("maxBytes must be at least 1.");
+		}
+	}
+
 	public function decode(string $imageData): Bitmap {
 		if (!function_exists("imagecreatefromstring")) {
 			throw new UnsupportedException("Decoding PNG graphics requires the GD extension.");
+		}
+
+		$size = Silencer::call(fn () => getimagesizefromstring($imageData))
+			?? throw new UnsupportedException("The graphic data is not an image GD can read.");
+		$bytes = intdiv($size[0] + 7, 8) * $size[1];
+
+		if ($bytes > $this->maxBytes) {
+			throw new ParseException("A {$size[0]} x {$size[1]} image needs {$bytes} bytes, more than the limit of {$this->maxBytes} bytes.");
 		}
 
 		$image = Silencer::call(fn () => imagecreatefromstring($imageData))
