@@ -1,0 +1,54 @@
+name: tests
+
+on:
+  push:
+    paths:
+      - '.github/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpstan.neon'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.4, 8.5]
+        stability: [prefer-lowest, prefer-stable]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          # extensions:
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --ansi
+
+      - name: Run static analysis
+        run: ./vendor/bin/phpstan analyse --no-progress
+
+      - name: Run tests
+        run: ./vendor/bin/pest

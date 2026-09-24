@@ -1,0 +1,36 @@
+~DGR:ARROW.GRF,32,2,
+FFFF
+8001
+8001
+9FF9
+9FF9
+9019
+9019
+9019
+9019
+9FF9
+9FF9
+8001
+8001
+FFFF
+0000
+0000
+^XA
+^PW400
+^LL300
+
+^FX Recall the downloaded graphic at several magnifications
+^FO20,20^XGR:ARROW.GRF,1,1^FS
+^FO60,20^XGR:ARROW.GRF,2,2^FS
+^FO120,20^XGR:ARROW.GRF,4,4^FS
+
+^FX Inline graphic field, run-length compressed
+^FO220,20^GFA,16,16,2,JF8001:::::JF^FS
+
+^FX Inline graphic with plain hex
+^FO20,120^GFA,16,16,2,FFFF8001800180018001800180018001^FS
+
+^FX Recall inverted through ^FR
+^FO120,120^FR^XGR:ARROW.GRF,3,3^FS
+^FO20,200^A0N,24,24^FH^FDGraphics from _7EDG, _5EGF and _5EXG^FS
+^XZ

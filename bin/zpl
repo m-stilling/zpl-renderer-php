@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+foreach ([__DIR__ . "/../vendor/autoload.php", __DIR__ . "/../../../autoload.php"] as $autoload) {
+	if (file_exists($autoload)) {
+		require $autoload;
+		break;
+	}
+}
+
+exit((new Stilling\Zpl\Cli())->run($argv, STDOUT, STDERR));

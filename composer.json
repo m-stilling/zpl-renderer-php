@@ -1,0 +1,52 @@
+{
+	"$schema": "https://getcomposer.org/schema.json",
+	"name": "stilling/zpl",
+	"description": "Parse and render ZPL label code: ZPL to vector PDF, without a printer or an online service.",
+	"keywords": ["zpl", "zebra", "pdf", "label", "barcode"],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Michael Stilling",
+			"email": "git@stilling.dev"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/m-stilling/zpl-php/issues",
+		"source": "https://github.com/m-stilling/zpl-php"
+	},
+	"require": {
+		"php": "^8.4",
+		"ext-mbstring": "*",
+		"ext-zlib": "*",
+		"tecnickcom/tc-lib-barcode": "^2.16"
+	},
+	"require-dev": {
+		"pestphp/pest": "^4.0",
+		"phpstan/phpstan": "^2.0"
+	},
+	"suggest": {
+		"ext-gd": "Required to decode PNG images sent with ~DY"
+	},
+	"bin": ["bin/zpl"],
+	"autoload": {
+		"psr-4": {
+			"Stilling\\Zpl\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"test": "pest",
+		"analyse": "phpstan analyse"
+	},
+	"config": {
+		"allow-plugins": {
+			"pestphp/pest-plugin": true
+		}
+	},
+	"minimum-stability": "stable",
+	"prefer-stable": true
+}
