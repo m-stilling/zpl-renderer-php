@@ -34,12 +34,12 @@
 ^FO30,770^A0N,40,80^FDWide^FS
 ^FO330,770^A0N,80,40^FDTall^FS
 
-^FX Rotations around a common ^FO point
-^FO500,700^GB4,4,4^FS
-^FO500,700^A0N,30,30^FDNormal^FS
-^FO500,700^A0R,30,30^FDRotated^FS
-^FO500,700^A0I,30,30^FDInverted^FS
-^FO500,700^A0B,30,30^FDBottom^FS
+^FX Rotations around a common ^FT point
+^FO558,758^GB4,4,4^FS
+^FT560,760^A0N,30,30^FDNormal^FS
+^FT560,760^A0R,30,30^FDRotated^FS
+^FT560,760^A0I,30,30^FDInverted^FS
+^FT560,760^A0B,30,30^FDBottom^FS
 
 ^FX Field block
 ^FO30,880^GB380,200,2^FS
