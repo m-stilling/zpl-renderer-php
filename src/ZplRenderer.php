@@ -12,7 +12,7 @@ use Stilling\ZplRenderer\Renderer\PngRenderer;
 /**
  * Entry point: turn ZPL into labels, and labels into output formats.
  */
-class Zpl {
+class ZplRenderer {
 	/**
 	 * Render every ^XA ... ^XZ format in the input as one PDF page (or as many
 	 * pages as ^PQ asks for). Returns the PDF bytes.

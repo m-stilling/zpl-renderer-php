@@ -2,10 +2,10 @@
 
 use Stilling\ZplRenderer\Exceptions\RenderException;
 use Stilling\ZplRenderer\Options;
-use Stilling\ZplRenderer\Zpl;
+use Stilling\ZplRenderer\ZplRenderer;
 
 function png(string $zpl, ?Options $options = null): GdImage {
-	$image = imagecreatefromstring(Zpl::toPng($zpl, $options));
+	$image = imagecreatefromstring(ZplRenderer::toPng($zpl, $options));
 
 	if ($image === false) {
 		throw new RuntimeException("The output is not a PNG.");
@@ -186,22 +186,22 @@ test("^POI and ^PMY flip the image", function () {
 
 test("toPngs gives one image per label and toPng picks one", function () {
 	$zpl = "^XA^PW10^LL10^XZ^XA^PW20^LL20^XZ";
-	$all = Zpl::toPngs($zpl);
+	$all = ZplRenderer::toPngs($zpl);
 
 	expect($all)->toHaveCount(2)
-		->and(imagesx((imagecreatefromstring(Zpl::toPng($zpl, index: 1)) ?: throw new RuntimeException())))->toBe(20);
+		->and(imagesx((imagecreatefromstring(ZplRenderer::toPng($zpl, index: 1)) ?: throw new RuntimeException())))->toBe(20);
 });
 
 test("toPng rejects a label index that does not exist", function () {
-	Zpl::toPng("^XA^XZ", index: 3);
+	ZplRenderer::toPng("^XA^XZ", index: 3);
 })->throws(RenderException::class);
 
 test("a missing font file is reported", function () {
-	Zpl::toPng("^XA^FO0,0^A0N,20,20^FDx^FS^XZ", new Options(scalableFontFile: "/nowhere/font.ttf"));
+	ZplRenderer::toPng("^XA^FO0,0^A0N,20,20^FDx^FS^XZ", new Options(scalableFontFile: "/nowhere/font.ttf"));
 })->throws(RenderException::class, "font.ttf");
 
 test("the example labels render to PNG", function (string $file) {
-	foreach (Zpl::toPngs((string) file_get_contents($file)) as $png) {
+	foreach (ZplRenderer::toPngs((string) file_get_contents($file)) as $png) {
 		expect(imagecreatefromstring($png))->not->toBeFalse();
 	}
 })->with(array_map(fn ($f) => [$f], glob(__DIR__ . "/../../examples/*.zpl") ?: []));

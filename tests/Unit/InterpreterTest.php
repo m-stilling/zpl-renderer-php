@@ -13,10 +13,10 @@ use Stilling\ZplRenderer\Model\Orientation;
 use Stilling\ZplRenderer\Model\TextElement;
 use Stilling\ZplRenderer\Model\TextJustification;
 use Stilling\ZplRenderer\Options;
-use Stilling\ZplRenderer\Zpl;
+use Stilling\ZplRenderer\ZplRenderer;
 
 function label(string $zpl, ?Options $options = null): Label {
-	$labels = Zpl::parse($zpl, $options);
+	$labels = ZplRenderer::parse($zpl, $options);
 
 	expect($labels)->toHaveCount(1);
 
@@ -65,14 +65,14 @@ test("^PW and ^LL are clamped to maxLabelDots", function () {
 });
 
 test("^PW and ^LL stay in effect for the labels that follow", function () {
-	$labels = Zpl::parse("^XA^PW300^LL150^XZ^XA^XZ^XA^PW500^XZ^XA^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
+	$labels = ZplRenderer::parse("^XA^PW300^LL150^XZ^XA^XZ^XA^PW500^XZ^XA^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
 	$sizes = array_map(fn (Label $label): array => [$label->width, $label->height], $labels);
 
 	expect($sizes)->toBe([[300, 150], [300, 150], [500, 150], [500, 150]]);
 });
 
 test("every ^XA ^XZ pair is one label and text outside is ignored", function () {
-	expect(Zpl::parse("noise^XA^FDa^FS^XZ more ^XA^FDb^FS^XZ"))->toHaveCount(2);
+	expect(ZplRenderer::parse("noise^XA^FDa^FS^XZ more ^XA^FDb^FS^XZ"))->toHaveCount(2);
 });
 
 test("a text field takes its position, font and orientation", function () {
@@ -290,7 +290,7 @@ test("^XG of an unknown graphic draws nothing", function () {
 test("^DF stores a format that ^XF recalls with ^FN values filled in", function () {
 	$zpl = "^XA^DFR:F.ZPL^FS^FO10,10^FN1^FS^FO10,50^FN2^FDdefault^FS^XZ^XA^XFR:F.ZPL^FS^FN1^FDone^FS^XZ";
 
-	expect(Zpl::parse($zpl))->toHaveCount(1)
+	expect(ZplRenderer::parse($zpl))->toHaveCount(1)
 		->and(label($zpl)->elements)->toHaveCount(2)
 		->and(text($zpl)->text)->toBe("one")
 		->and(text($zpl)->x)->toBe(10)
@@ -300,7 +300,7 @@ test("^DF stores a format that ^XF recalls with ^FN values filled in", function 
 test("a stored format that recalls itself is recalled once", function () {
 	$zpl = "^XA^DFR:A.ZPL^FS^XFR:A.ZPL^FS^FO0,0^FDa^FS^XZ^XA^XFR:A.ZPL^FS^XZ";
 
-	expect(Zpl::parse($zpl))->toHaveCount(1)
+	expect(ZplRenderer::parse($zpl))->toHaveCount(1)
 		->and(label($zpl)->elements)->toHaveCount(1);
 });
 
@@ -314,7 +314,7 @@ test("stored formats that recall each other are each recalled once", function ()
 });
 
 test("~DY object data larger than maxGraphicBytes is rejected before it is decoded", function (string $data) {
-	Zpl::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
+	ZplRenderer::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
 })->with([
 	":B64:" => [":B64:" . base64_encode(str_repeat("\0", 17)) . ":0000"],
 	"hex" => [str_repeat("00", 17)],
@@ -323,7 +323,7 @@ test("~DY object data larger than maxGraphicBytes is rejected before it is decod
 test("~DY :Z64: data that expands beyond maxGraphicBytes is rejected", function () {
 	$data = ":Z64:" . base64_encode((string) gzcompress(str_repeat("\0", 1000))) . ":0000";
 
-	Zpl::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
+	ZplRenderer::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
 })->throws(UnsupportedException::class, "more than 16 bytes");
 
 test("^PQ, ^PO and ^PM set the label flags", function () {
@@ -341,7 +341,7 @@ test("^LR reverses the fields after it until ^LRN", function () {
 });
 
 test("printer settings carry over to the labels that follow and ^PQ does not", function () {
-	$labels = Zpl::parse("^XA^LH10,20^LS5^LT7^LRY^POI^PMY^PQ3^XZ^XA^FO100,100^FDx^FS^XZ");
+	$labels = ZplRenderer::parse("^XA^LH10,20^LS5^LT7^LRY^POI^PMY^PQ3^XZ^XA^FO100,100^FDx^FS^XZ");
 	$text = $labels[1]->elements[0];
 
 	expect([$text->x, $text->y, $text->reverse])->toBe([115, 127, true])
@@ -349,13 +349,13 @@ test("printer settings carry over to the labels that follow and ^PQ does not", f
 });
 
 test("^LL after the first ^FS sets the length of the next label only", function () {
-	$labels = Zpl::parse("^XA^LL100^FO0,0^FDx^FS^LL200^XZ^XA^XZ");
+	$labels = ZplRenderer::parse("^XA^LL100^FO0,0^FDx^FS^LL200^XZ^XA^XZ");
 
 	expect([$labels[0]->height, $labels[1]->height])->toBe([100, 200]);
 });
 
 test("the ^FS that ends ^DF or ^XF does not count as the first ^FS for ^LL", function () {
-	$labels = Zpl::parse("^XA^DFR:SIZE.ZPL^FS^LL240^FO0,0^FDx^FS^XZ^XA^XFR:SIZE.ZPL^FS^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
+	$labels = ZplRenderer::parse("^XA^DFR:SIZE.ZPL^FS^LL240^FO0,0^FDx^FS^XZ^XA^XFR:SIZE.ZPL^FS^XZ", new Options(dpmm: 8, widthMm: 50, heightMm: 25));
 
 	expect($labels)->toHaveCount(1)
 		->and($labels[0]->height)->toBe(240);

@@ -59,10 +59,10 @@ function pngBytes(GdImage $image): string {
  * @return list<Stilling\ZplRenderer\Model\Label>
  */
 function builderLabels(string $zpl): array {
-	$labels = Stilling\ZplRenderer\Zpl::parse($zpl);
+	$labels = Stilling\ZplRenderer\ZplRenderer::parse($zpl);
 
-	expect(Stilling\ZplRenderer\Zpl::toPdf($zpl))->toStartWith("%PDF-")
-		->and(Stilling\ZplRenderer\Zpl::toPngs($zpl))->toHaveCount(count($labels));
+	expect(Stilling\ZplRenderer\ZplRenderer::toPdf($zpl))->toStartWith("%PDF-")
+		->and(Stilling\ZplRenderer\ZplRenderer::toPngs($zpl))->toHaveCount(count($labels));
 
 	return $labels;
 }

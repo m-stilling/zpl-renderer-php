@@ -27,26 +27,26 @@ Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the
 
 ```php
 use Stilling\ZplRenderer\Options;
-use Stilling\ZplRenderer\Zpl;
+use Stilling\ZplRenderer\ZplRenderer;
 
 $zpl = '^XA^FO50,50^A0N,40,40^FDHello^FS^FO50,120^BCN,80,Y,N,N^FD12345678^FS^XZ';
 $options = new Options(dpmm: 8, widthMm: 101.6, heightMm: 152.4);
 $options = (new Options())->dpmm(8)->widthMm(101.6)->heightMm(152.4);
 
-file_put_contents('label.pdf', Zpl::toPdf($zpl, $options));
-file_put_contents('label.png', Zpl::toPng($zpl, $options));
+file_put_contents('label.pdf', ZplRenderer::toPdf($zpl, $options));
+file_put_contents('label.png', ZplRenderer::toPng($zpl, $options));
 ```
 
-- `Zpl::toPdf()` returns one PDF with a page per label, and a page per copy when `^PQ` asks for more.
-- `Zpl::toPng()` returns one PNG. The third argument picks the label when the input holds several, counted from 0.
-- `Zpl::toPngs()` returns a list with one PNG per label.
-- `Zpl::parse()` returns the interpreted labels as a list of `Label` objects with their elements, for example to feed a different renderer.
+- `ZplRenderer::toPdf()` returns one PDF with a page per label, and a page per copy when `^PQ` asks for more.
+- `ZplRenderer::toPng()` returns one PNG. The third argument picks the label when the input holds several, counted from 0.
+- `ZplRenderer::toPngs()` returns a list with one PNG per label.
+- `ZplRenderer::parse()` returns the interpreted labels as a list of `Label` objects with their elements, for example to feed a different renderer.
 
 The `$options` argument is optional. Without it, every method uses `new Options()`.
 
 ### Labels and elements
 
-`Zpl::parse()` returns one `Label` per `^XA ... ^XZ` format. Every position and size in the model is in printer dots.
+`ZplRenderer::parse()` returns one `Label` per `^XA ... ^XZ` format. Every position and size in the model is in printer dots.
 
 | Property | Type | Meaning |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ Every element has `x` and `y`, an `orientation` (`Normal`, `Rotated`, `Inverted`
 ```php
 use Stilling\ZplRenderer\Model\TextElement;
 
-foreach (Zpl::parse($zpl) as $label) {
+foreach (ZplRenderer::parse($zpl) as $label) {
     foreach ($label->elements as $element) {
         if ($element instanceof TextElement) {
             echo "{$element->text} at {$element->x},{$element->y}\n";

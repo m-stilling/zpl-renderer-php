@@ -96,7 +96,7 @@ class Cli {
 		}
 
 		try {
-			$outputs = $format === "pdf" ? [Zpl::toPdf($zpl, $options)] : Zpl::toPngs($zpl, $options);
+			$outputs = $format === "pdf" ? [ZplRenderer::toPdf($zpl, $options)] : ZplRenderer::toPngs($zpl, $options);
 		} catch (\Throwable $exception) {
 			fwrite($stderr, "Error: " . $exception->getMessage() . "\n");
 
