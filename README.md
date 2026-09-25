@@ -1,4 +1,4 @@
-# ZPL
+# ZPL Renderer
 
 [![tests](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml) [![Packagist Version](https://img.shields.io/packagist/v/stilling/zpl-renderer)](https://packagist.org/packages/stilling/zpl-renderer)
 
