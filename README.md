@@ -70,7 +70,7 @@ Every element has `x` and `y`, an `orientation` (`Normal`, `Rotated`, `Inverted`
 | Class | Command | Properties |
 | --- | --- | --- |
 | `TextElement` | `^FD` | `text` in UTF-8, `font` as a `FontSpec` with the font id and the cell size, `block` as a `FieldBlock` when `^FB` is set. |
-| `BarcodeElement` | `^B...` | `matrix` of modules, `moduleWidth` and `moduleHeight` in dots, `text` of the interpretation line, `textAbove`. |
+| `BarcodeElement` | `^B...` | `matrix` as a `BarcodeMatrix` with `columns`, `rows` and the dark `bars` as `[x, y, width, height]` in modules, `moduleWidth` and `moduleHeight` in dots, `text` of the interpretation line, `textAbove`. |
 | `BoxElement` | `^GB` | `width`, `height`, `thickness`, `rounding`, `black`. |
 | `CircleElement` | `^GC` | `diameter`, `thickness`, `black`. |
 | `EllipseElement` | `^GE` | `width`, `height`, `thickness`, `black`. |
