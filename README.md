@@ -21,6 +21,11 @@ Requires PHP 8.3 with the `mbstring` and `zlib` extensions. PNG output needs the
 <td valign="top"><img src="examples/barcodes.png" width="270" alt="Every barcode type rendered to PNG"></td>
 <td valign="top"><img src="examples/shapes-and-fonts.png" width="270" alt="Shapes and fonts rendered to PNG"></td>
 </tr>
+<tr>
+<td align="center"><a href="examples/shipping-label.zpl">ZPL</a> · <a href="examples/shipping-label.pdf">PDF</a> · <a href="examples/shipping-label.png">PNG</a> · <a href="examples/shipping-label.svg">SVG</a></td>
+<td align="center"><a href="examples/barcodes.zpl">ZPL</a> · <a href="examples/barcodes.pdf">PDF</a> · <a href="examples/barcodes.png">PNG</a> · <a href="examples/barcodes.svg">SVG</a></td>
+<td align="center"><a href="examples/shapes-and-fonts.zpl">ZPL</a> · <a href="examples/shapes-and-fonts.pdf">PDF</a> · <a href="examples/shapes-and-fonts.png">PNG</a> · <a href="examples/shapes-and-fonts.svg">SVG</a></td>
+</tr>
 </table>
 
 ## Usage
