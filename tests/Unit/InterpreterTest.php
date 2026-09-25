@@ -326,6 +326,30 @@ test("~DY :Z64: data that expands beyond maxGraphicBytes is rejected", function 
 	ZplRenderer::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
 })->throws(UnsupportedException::class, "more than 16 bytes");
 
+test("~DY stores a binary PNG by the byte count that ^XG recalls", function () {
+	$image = imagecreatetruecolor(16, 2);
+	imagefill($image, 0, 0, (int) imagecolorallocate($image, 255, 255, 255));
+	imagefilledrectangle($image, 0, 0, 7, 1, (int) imagecolorallocate($image, 0, 0, 0));
+	$png = pngBytes($image);
+	$zpl = "~DYR:LOGO.PNG,B,P," . strlen($png) . ",," . $png . "^XA^FO0,0^XGR:LOGO.PNG^FS^XZ";
+
+	expectBitmapMatches(element($zpl, ImageElement::class), $image);
+});
+
+test("~DY stores binary GRF rows by the byte count", function () {
+	$image = element("~DYR:BOX.GRF,B,G,3,1,\xFF\x5E\xFF^XA^FO0,0^XGR:BOX.GRF^FS^XZ", ImageElement::class);
+
+	expect($image->bitmap->height)->toBe(3)
+		->and($image->bitmap->pixel(0, 0))->toBeTrue()
+		->and($image->bitmap->pixel(0, 1))->toBeFalse()
+		->and($image->bitmap->pixel(1, 1))->toBeTrue()
+		->and($image->bitmap->pixel(7, 2))->toBeTrue();
+});
+
+test("~DY binary data larger than maxGraphicBytes is rejected", function () {
+	ZplRenderer::parse("~DYR:LOGO.PNG,B,P,17,0," . str_repeat("\0", 17) . "^XA^XZ", new Options(maxGraphicBytes: 16));
+})->throws(ParseException::class, "more than the limit of 16 bytes");
+
 test("^PQ, ^PO and ^PM set the label flags", function () {
 	$label = label("^XA^PQ3^POI^PMY^XZ");
 

@@ -16,6 +16,8 @@ class Command {
 		public readonly string $params,
 		/** The parameter delimiter in force when the command was read. */
 		public readonly string $delimiter = ",",
+		/** Raw bytes of a binary ~DY object, taken by the byte count in its header. Not in params. */
+		public readonly ?string $data = null,
 	) {
 	}
 

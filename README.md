@@ -178,7 +178,7 @@ Without an output path the file is written next to the input with the new extens
 
 Both labels are 400 × 200 dots, and both fields print in reverse.
 
-`^GF` takes ASCII hex, run-length compressed, `:B64:` and `:Z64:` data. `~DY` takes GRF, and PNG through GD.
+`^GF` takes ASCII hex, run-length compressed, `:B64:` and `:Z64:` data. `~DY` takes GRF, and PNG through GD, as ASCII hex, `:B64:`, `:Z64:` or raw binary. Raw binary data is read by the byte count in the `~DY` header when the format is not `A`, so a `^` or `~` byte in the data does not start a command.
 
 Font 0 is the scalable CG Triumvirate Bold Condensed. Fonts A to H are the fixed-pitch bitmap fonts; they magnify in whole steps like the printer does, and fonts B and H print capital letters only. Any other font id is treated like font 0.
 

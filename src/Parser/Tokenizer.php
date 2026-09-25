@@ -13,6 +13,7 @@ class Tokenizer {
 
 	private string $controlPrefix = "~";
 
+	/** @var non-empty-string */
 	private string $delimiter = ",";
 
 	/**
@@ -57,9 +58,12 @@ class Tokenizer {
 			}
 
 			$start = $i;
+			$data = null;
 
 			if ($this->changesPrefix($name)) {
 				$i = min($length, $i + 1);
+			} elseif ($name === "DY" && ($object = $this->binaryObject($zpl, $start)) !== null) {
+				[$i, $data] = $object;
 			} else {
 				while ($i < $length && $zpl[$i] !== $this->formatPrefix && $zpl[$i] !== $this->controlPrefix) {
 					$i++;
@@ -67,12 +71,53 @@ class Tokenizer {
 			}
 
 			$params = str_replace(["\r", "\n"], "", substr($zpl, $start, $i - $start));
-			$commands[] = new Command($name, $params, $this->delimiter);
+			$commands[] = new Command($name, $params, $this->delimiter, $data);
+
+			if ($data !== null) {
+				$i += 1 + strlen($data);
+			}
 
 			$this->applyPrefixChange($name, $params);
 		}
 
 		return $commands;
+	}
+
+	/**
+	 * A ~DY object in a format other than A (ASCII) carries raw binary data,
+	 * which can hold prefix bytes. The header gives the byte count, so the
+	 * data is taken by count instead of scanning for the next command.
+	 *
+	 * Returns the offset of the delimiter before the data and the data itself,
+	 * or null when the object is ASCII, :B64:, :Z64: or without a byte count.
+	 *
+	 * @return array{int, string}|null
+	 */
+	private function binaryObject(string $zpl, int $start): ?array {
+		$end = $start - 1;
+
+		for ($field = 0; $field < 5; $field++) {
+			$end = strpos($zpl, $this->delimiter, $end + 1);
+
+			if ($end === false) {
+				return null;
+			}
+		}
+
+		$header = substr($zpl, $start, $end - $start);
+
+		if (strpbrk($header, $this->formatPrefix . $this->controlPrefix) !== false) {
+			return null;
+		}
+
+		$fields = array_map(trim(...), explode($this->delimiter, $header));
+		$total = (int) $fields[3];
+
+		if (strtoupper($fields[1]) === "A" || $total < 1 || preg_match('/^:[BZ]64:/i', substr($zpl, $end + 1, 5)) === 1) {
+			return null;
+		}
+
+		return [$end, substr($zpl, $end + 1, $total)];
 	}
 
 	/**

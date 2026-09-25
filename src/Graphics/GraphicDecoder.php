@@ -38,6 +38,29 @@ class GraphicDecoder {
 			$binary = $this->decodeHex($data, $bytesPerRow);
 		}
 
+		return $this->bitmap($binary, $bytesPerRow, $totalBytes);
+	}
+
+	/**
+	 * Raw binary rows, as a ~DY object sends them in format B: the bytes are
+	 * the packed rows themselves, not hex or base64.
+	 */
+	public function decodeBinary(string $binary, int $bytesPerRow, int $totalBytes): Bitmap {
+		if ($bytesPerRow < 1) {
+			throw new ParseException("Graphic data needs a positive bytes-per-row value.");
+		}
+
+		$this->limit($bytesPerRow);
+		$this->limit($totalBytes);
+		$this->limit(strlen($binary));
+
+		return $this->bitmap($binary, $bytesPerRow, $totalBytes);
+	}
+
+	/**
+	 * Cut or pad the rows to totalBytes, then pad the last row to a whole row.
+	 */
+	private function bitmap(string $binary, int $bytesPerRow, int $totalBytes): Bitmap {
 		if ($totalBytes > 0) {
 			$binary = str_pad(substr($binary, 0, $totalBytes), $totalBytes, "\0");
 		}

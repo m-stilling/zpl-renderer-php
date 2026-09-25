@@ -527,16 +527,20 @@ class Interpreter {
 				return;
 			}
 
-			$this->graphics->put($name, $this->graphicDecoder->decode($data, $bytesPerRow, $total));
+			$bitmap = $command->data === null
+				? $this->graphicDecoder->decode($data, $bytesPerRow, $total)
+				: $this->graphicDecoder->decodeBinary($command->data, $bytesPerRow, $total);
+			$this->graphics->put($name, $bitmap);
 
 			return;
 		}
 
-		$this->graphics->put($name, (new PngDecoder($this->options->getMaxGraphicBytes()))->decode($this->objectBytes($data)));
+		$binary = $command->data === null ? $this->objectBytes($data) : $this->limitObject($command->data);
+		$this->graphics->put($name, (new PngDecoder($this->options->getMaxGraphicBytes()))->decode($binary));
 	}
 
 	/**
-	 * ~DY image data is base64 (:B64:), zlib+base64 (:Z64:) or ASCII hex.
+	 * ~DY object data as text: base64 (:B64:), zlib+base64 (:Z64:) or ASCII hex.
 	 * The decoded bytes are limited by the maxGraphicBytes option.
 	 */
 	private function objectBytes(string $data): string {
@@ -559,6 +563,12 @@ class Interpreter {
 		} else {
 			$binary = $data;
 		}
+
+		return $this->limitObject($binary);
+	}
+
+	private function limitObject(string $binary): string {
+		$limit = $this->options->getMaxGraphicBytes();
 
 		if (strlen($binary) > $limit) {
 			throw new ParseException("The ~DY object holds " . strlen($binary) . " bytes, more than the limit of {$limit} bytes.");
