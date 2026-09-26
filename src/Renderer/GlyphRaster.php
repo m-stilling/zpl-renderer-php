@@ -120,7 +120,10 @@ class GlyphRaster {
 				}
 
 				$first ??= $column;
-				$values = array_pad($values, $column - $first, 0.0);
+				for ($gap = $first + count($values); $gap < $column; $gap++) {
+					$values[] = 0.0;
+				}
+
 				$values[] = min(1.0, $amount);
 			}
 
