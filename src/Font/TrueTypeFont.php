@@ -122,10 +122,17 @@ class TrueTypeFont {
 		$total = 0;
 
 		foreach (unpack("C*", $winAnsi) ?: [] as $code) {
-			$total += $this->widths[$code] ?? $this->widths[32];
+			$total += $this->advance($code);
 		}
 
 		return $total / 1000;
+	}
+
+	/**
+	 * Advance width of a WinAnsi character in 1/1000 em. A code outside 32 to 255 advances like a space.
+	 */
+	public function advance(int $code): int {
+		return $this->widths[$code] ?? $this->widths[32];
 	}
 
 	/**

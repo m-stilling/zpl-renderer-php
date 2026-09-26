@@ -86,6 +86,22 @@ test("a word longer than the block is broken between characters", function () {
 	expect(array_map(fn ($line) => $line->text, $layout->lines))->toBe(["abcde", "fghij"]);
 });
 
+test("a broken word continues on the line with the words after it", function () {
+	$spec = new FontSpec("A", 9, 5);
+	$block = new FieldBlock(width: 30, maxLines: 5);
+	$layout = TextLayout::layout(new TextElement(0, 0, "abcdefgh ij kl", $spec, block: $block), ZebraFont::resolve($spec));
+
+	expect(array_map(fn ($line) => $line->text, $layout->lines))->toBe(["abcde", "fgh", "ij kl"]);
+});
+
+test("a word of 200000 characters in a block one dot wide breaks into one line per character", function () {
+	$spec = new FontSpec("A", 9, 5);
+	$block = new FieldBlock(width: 1, maxLines: 3);
+	$layout = TextLayout::layout(new TextElement(0, 0, str_repeat("ab", 100000), $spec, block: $block), ZebraFont::resolve($spec));
+
+	expect(array_map(fn ($line) => $line->text, $layout->lines))->toBe(["a", "b", "a"]);
+});
+
 test("justified lines spread the extra space over the spaces except on the last line", function () {
 	$spec = new FontSpec("A", 9, 5);
 	$block = new FieldBlock(width: 70, maxLines: 3, justification: TextJustification::Justified);

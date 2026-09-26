@@ -98,20 +98,34 @@ class TextLayout {
 
 	/**
 	 * Greedy word wrap. A word longer than a line is broken between characters.
+	 * Widths are kept as running sums of the character advances, so every
+	 * character is measured once.
 	 *
 	 * @return list<string>
 	 */
 	private static function wrap(string $paragraph, ResolvedFont $font, int $width, int $hangingIndent): array {
 		$lines = [];
 		$current = "";
+		$currentUnits = 0;
+		$space = $font->face->advance(32);
 		$width += self::TOLERANCE;
 
 		foreach (explode(" ", $paragraph) as $word) {
 			$available = $width - ($lines === [] ? 0 : $hangingIndent);
-			$candidate = $current === "" ? $word : "{$current} {$word}";
+			$advances = [];
+			$wordUnits = 0;
 
-			if ($font->width($candidate) <= $available || $current === "" && $font->width($word) <= $available) {
-				$current = $candidate;
+			foreach (unpack("C*", $word) ?: [] as $code) {
+				$advance = $font->face->advance($code);
+				$advances[] = $advance;
+				$wordUnits += $advance;
+			}
+
+			$candidateUnits = $current === "" ? $wordUnits : $currentUnits + $space + $wordUnits;
+
+			if ($font->unitsWidth($candidateUnits) <= $available || $current === "" && $font->unitsWidth($wordUnits) <= $available) {
+				$current = $current === "" ? $word : "{$current} {$word}";
+				$currentUnits = $candidateUnits;
 				continue;
 			}
 
@@ -121,18 +135,25 @@ class TextLayout {
 				$available = $width - $hangingIndent;
 			}
 
-			while ($font->width($word) > $available && strlen($word) > 1) {
-				$fit = 1;
+			$start = 0;
+			$length = strlen($word);
 
-				while ($fit < strlen($word) && $font->width(substr($word, 0, $fit + 1)) <= $available) {
+			while ($length - $start > 1 && $font->unitsWidth($wordUnits) > $available) {
+				$fit = 1;
+				$fitUnits = $advances[$start];
+
+				while ($start + $fit < $length && $font->unitsWidth($fitUnits + $advances[$start + $fit]) <= $available) {
+					$fitUnits += $advances[$start + $fit];
 					$fit++;
 				}
 
-				$lines[] = substr($word, 0, $fit);
-				$word = substr($word, $fit);
+				$lines[] = substr($word, $start, $fit);
+				$start += $fit;
+				$wordUnits -= $fitUnits;
 			}
 
-			$current = $word;
+			$current = substr($word, $start);
+			$currentUnits = $wordUnits;
 		}
 
 		$lines[] = $current;

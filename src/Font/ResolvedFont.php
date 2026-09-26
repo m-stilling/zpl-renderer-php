@@ -33,6 +33,14 @@ class ResolvedFont {
 	}
 
 	/**
+	 * Width in dots of characters whose advance widths add up to the given
+	 * 1/1000 em units, after horizontal scaling. Equal to width() of those characters.
+	 */
+	public function unitsWidth(int $units): float {
+		return $units / 1000 * $this->size * $this->horizontalScale;
+	}
+
+	/**
 	 * Height of the capital letters in dots.
 	 */
 	public function capHeight(): float {
