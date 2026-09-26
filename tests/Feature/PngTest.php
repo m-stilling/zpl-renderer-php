@@ -202,6 +202,14 @@ test("an image with more pixels than maxPngPixels is rejected", function () {
 		->and(imagesx(png("^XA^PW100^LL50^XZ", new Options(pixelsPerDot: 2, maxPngPixels: 20000))))->toBe(200);
 });
 
+test("the fields of a label may cover the image 8 times over, and no more", function () {
+	$box = "^FO0,0^GB400,400,400^FS";
+
+	expect(imagesx(png("^XA^PW400^LL400" . str_repeat($box, 8) . "^XZ")))->toBe(400)
+		->and(fn () => png("^XA^PW400^LL400" . str_repeat($box, 9) . "^XZ"))->toThrow(RenderException::class, "limit of 1280000 pixels")
+		->and(imagesx(png("^XA^PW100^LL100" . str_repeat("^FO0,0^GB100,100,100^FS", 50) . "^XZ")))->toBe(100);
+});
+
 test("^POI and ^PMY flip the image", function () {
 	$inverted = png("^XA^PW100^LL50^POI^FO0,0^GB10,10,10^FS^XZ");
 	$mirrored = png("^XA^PW100^LL50^PMY^FO0,0^GB10,10,10^FS^XZ");

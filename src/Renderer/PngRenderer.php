@@ -45,6 +45,12 @@ class PngRenderer {
 	/** Pixels that a field is drawn beyond the image edge, so that rounding in its placement cannot leave a gap. */
 	private const int CLIP_MARGIN = 2;
 
+	/** How many times over the fields of one label may cover the image, summed over the fields. */
+	private const int MAX_COVERAGE = 8;
+
+	/** The pixels that the fields of one label may cover on a small image, where MAX_COVERAGE gives fewer. */
+	private const int MIN_COVERAGE_PIXELS = 1048576;
+
 	/** @var array<string, list<array{int, int, list<float>}>> glyph rasters by font file, character and scale */
 	private static array $glyphs = [];
 
@@ -62,6 +68,12 @@ class PngRenderer {
 
 	/** @var array{int, int, int, int}|null pixel bounds drawn on the current layer: x0, y0, x1, y1 */
 	private ?array $drawn = null;
+
+	/** The pixels that the fields of the current label cover, summed over the fields. */
+	private int $covered = 0;
+
+	/** The most pixels that the fields of the current label may cover. */
+	private int $maxCovered = 0;
 
 	public function __construct(
 		private readonly Options $options,
@@ -91,6 +103,8 @@ class PngRenderer {
 
 		$canvas = $this->canvas($this->width, $this->height);
 		$this->layer = $this->layer($this->width, $this->height);
+		$this->covered = 0;
+		$this->maxCovered = max(self::MAX_COVERAGE * $this->width * $this->height, self::MIN_COVERAGE_PIXELS);
 
 		foreach ($label->elements as $element) {
 			$this->renderElement($canvas, $element);
@@ -137,6 +151,12 @@ class PngRenderer {
 
 		if ($x1 <= $x0 || $y1 <= $y0) {
 			return;
+		}
+
+		$this->covered += ($x1 - $x0) * ($y1 - $y0);
+
+		if ($this->covered > $this->maxCovered) {
+			throw new RenderException("The fields of the label cover more than the limit of {$this->maxCovered} pixels in total.");
 		}
 
 		$this->merge($canvas, $layer, $x0, $y0, $x1, $y1, $element->reverse);
