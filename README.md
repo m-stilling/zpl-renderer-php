@@ -125,7 +125,7 @@ $sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
 | `honorLabelSize` | `true` | Let `^PW` and `^LL` change the page size. |
 | `maxLabelDots` | `32000` | Largest width or length in dots that `^PW` and `^LL` can set. A larger value is clamped to it. Lower it when untrusted ZPL is rendered to PNG, since the image holds every dot. |
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
-| `maxPages` | `1000` | Upper bound on pages per PDF. |
+| `maxPages` | `1000` | Upper bound on pages per PDF, and on images per `toPngs()` or `toSvgs()` call. The labels after the limit are not rendered. |
 | `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF`, `~DG` or `~DY` graphic, decoded. A larger graphic throws a `ParseException`. |
 | `maxTotalGraphicBytes` | `67108864` | Upper bound on the bytes of all graphics in one call. Every `^GF`, `~DG` and `~DY` graphic counts when it is decoded, and every `^XG` and `^IM` counts the graphic it places. A `~DY` PNG counts 4 bytes per pixel. More throw a `ParseException`. |
 | `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |

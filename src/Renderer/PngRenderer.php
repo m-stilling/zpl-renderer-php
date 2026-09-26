@@ -73,10 +73,10 @@ class PngRenderer {
 
 	/**
 	 * @param list<Label> $labels
-	 * @return list<string> one PNG per label
+	 * @return list<string> one PNG per label, for at most maxPages labels
 	 */
 	public function render(array $labels): array {
-		return array_map($this->renderLabel(...), $labels);
+		return array_map($this->renderLabel(...), array_slice($labels, 0, $this->options->getMaxPages()));
 	}
 
 	public function renderLabel(Label $label): string {

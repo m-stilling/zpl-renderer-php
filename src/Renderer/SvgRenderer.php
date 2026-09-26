@@ -35,10 +35,10 @@ class SvgRenderer {
 
 	/**
 	 * @param list<Label> $labels
-	 * @return list<string> one SVG per label
+	 * @return list<string> one SVG per label, for at most maxPages labels
 	 */
 	public function render(array $labels): array {
-		return array_map($this->renderLabel(...), $labels);
+		return array_map($this->renderLabel(...), array_slice($labels, 0, $this->options->getMaxPages()));
 	}
 
 	public function renderLabel(Label $label): string {

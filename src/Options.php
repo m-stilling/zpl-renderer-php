@@ -173,7 +173,7 @@ class Options {
 		return $this->honorQuantity;
 	}
 
-	/** Upper bound on pages per PDF document, so a stray ^PQ99999 cannot exhaust memory. */
+	/** Upper bound on pages per PDF document, and on images per toPngs() or toSvgs() call, so a stray ^PQ99999 or a long run of labels cannot exhaust memory. */
 	public function maxPages(int $maxPages): static {
 		if ($maxPages < 1) {
 			throw new \InvalidArgumentException("maxPages must be at least 1.");

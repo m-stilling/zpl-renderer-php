@@ -220,6 +220,15 @@ test("toPngs gives one image per label and toPng picks one", function () {
 		->and(imagesx((imagecreatefromstring(ZplRenderer::toPng($zpl, index: 1)) ?: throw new RuntimeException())))->toBe(20);
 });
 
+test("toPngs and toSvgs render at most maxPages labels", function () {
+	$zpl = str_repeat("^XA^PW10^LL10^XZ", 3);
+	$options = new Options(maxPages: 2);
+
+	expect(ZplRenderer::toPngs($zpl, $options))->toHaveCount(2)
+		->and(ZplRenderer::toSvgs($zpl, $options))->toHaveCount(2)
+		->and(ZplRenderer::toPngs($zpl))->toHaveCount(3);
+});
+
 test("toPng rejects a label index that does not exist", function () {
 	ZplRenderer::toPng("^XA^XZ", index: 3);
 })->throws(RenderException::class);
