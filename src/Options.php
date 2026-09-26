@@ -34,6 +34,7 @@ class Options {
 	private string $monoFontFile;
 	private string $monoBoldFontFile;
 	private int $maxPngPixels;
+	private int $maxTotalGraphicBytes;
 
 	final public function __construct(
 		int $dpmm = 8,
@@ -51,6 +52,7 @@ class Options {
 		string $monoFontFile = self::FONT_DIRECTORY . "/RobotoMono-Regular.ttf",
 		string $monoBoldFontFile = self::FONT_DIRECTORY . "/RobotoMono-Bold.ttf",
 		int $maxPngPixels = PngRenderer::DEFAULT_MAX_PIXELS,
+		int $maxTotalGraphicBytes = GraphicDecoder::DEFAULT_MAX_TOTAL_BYTES,
 	) {
 		// Nothing else holds the instance yet, so the setters fill it in place.
 		$immutable = $this->immutable;
@@ -70,7 +72,8 @@ class Options {
 			->scalableFontFile($scalableFontFile)
 			->monoFontFile($monoFontFile)
 			->monoBoldFontFile($monoBoldFontFile)
-			->maxPngPixels($maxPngPixels);
+			->maxPngPixels($maxPngPixels)
+			->maxTotalGraphicBytes($maxTotalGraphicBytes);
 
 		$this->immutable = $immutable;
 	}
@@ -200,6 +203,26 @@ class Options {
 
 	public function getMaxGraphicBytes(): int {
 		return $this->maxGraphicBytes;
+	}
+
+	/**
+	 * Upper bound on the bytes of all graphics in one call: every ^GF, ~DG and
+	 * ~DY graphic when it is decoded, and every ^XG and ^IM again when it
+	 * places one. A ~DY PNG counts four bytes per pixel.
+	 */
+	public function maxTotalGraphicBytes(int $maxTotalGraphicBytes): static {
+		if ($maxTotalGraphicBytes < 1) {
+			throw new \InvalidArgumentException("maxTotalGraphicBytes must be at least 1.");
+		}
+
+		$options = $this->target();
+		$options->maxTotalGraphicBytes = $maxTotalGraphicBytes;
+
+		return $options;
+	}
+
+	public function getMaxTotalGraphicBytes(): int {
+		return $this->maxTotalGraphicBytes;
 	}
 
 	/** Horizontal scale applied to the scalable font 0, relative to the natural width of scalableFontFile. */

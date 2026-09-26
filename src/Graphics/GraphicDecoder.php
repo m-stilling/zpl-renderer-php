@@ -15,6 +15,9 @@ class GraphicDecoder {
 	/** 8 MiB, enough for a 20 by 30 cm label at 24 dots per millimeter. */
 	public const int DEFAULT_MAX_BYTES = 8388608;
 
+	/** 64 MiB, eight graphics of the largest size. */
+	public const int DEFAULT_MAX_TOTAL_BYTES = 67108864;
+
 	public function __construct(
 		private readonly int $maxBytes = self::DEFAULT_MAX_BYTES,
 	) {

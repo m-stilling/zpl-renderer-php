@@ -58,6 +58,9 @@ class Interpreter {
 	/** Stored commands applied by ^XF recalls in the current format. */
 	private int $recalledCommands = 0;
 
+	/** Bytes of the graphics decoded or placed so far, counted against maxTotalGraphicBytes. */
+	private int $graphicBytes = 0;
+
 	/** @var array<string, list<Command>> formats stored with ^DF */
 	private array $storedFormats = [];
 
@@ -501,6 +504,7 @@ class Interpreter {
 		}
 
 		$bitmap = $this->graphicDecoder->decode($data, $bytesPerRow, $total);
+		$this->countGraphic(strlen($bitmap->data));
 		$this->field->shape = fn (): Element => new ImageElement(...$this->origin(), bitmap: $bitmap);
 	}
 
@@ -514,7 +518,9 @@ class Interpreter {
 			return;
 		}
 
-		$this->graphics->put($name, $this->graphicDecoder->decode($args[3] ?? "", $bytesPerRow, $total));
+		$bitmap = $this->graphicDecoder->decode($args[3] ?? "", $bytesPerRow, $total);
+		$this->countGraphic(strlen($bitmap->data));
+		$this->graphics->put($name, $bitmap);
 	}
 
 	private function downloadObject(Command $command): void {
@@ -537,13 +543,30 @@ class Interpreter {
 			$bitmap = $command->data === null
 				? $this->graphicDecoder->decode($data, $bytesPerRow, $total)
 				: $this->graphicDecoder->decodeBinary($command->data, $bytesPerRow, $total);
+			$this->countGraphic(strlen($bitmap->data));
 			$this->graphics->put($name, $bitmap);
 
 			return;
 		}
 
 		$binary = $command->data === null ? $this->objectBytes($data) : $this->limitObject($command->data);
-		$this->graphics->put($name, (new PngDecoder($this->options->getMaxGraphicBytes()))->decode($binary));
+		$decoder = new PngDecoder($this->options->getMaxGraphicBytes());
+		[$width, $height] = $decoder->dimensions($binary);
+		$this->countGraphic($width * $height * 4);
+		$this->graphics->put($name, $decoder->decode($binary));
+	}
+
+	/**
+	 * Count bytes of graphics against maxTotalGraphicBytes. A PNG counts the
+	 * four bytes per pixel that GD takes to decode it.
+	 */
+	private function countGraphic(int $bytes): void {
+		$limit = $this->options->getMaxTotalGraphicBytes();
+		$this->graphicBytes += $bytes;
+
+		if ($this->graphicBytes > $limit) {
+			throw new ParseException("The graphics need more than the limit of {$limit} bytes in total.");
+		}
 	}
 
 	/**
@@ -591,6 +614,7 @@ class Interpreter {
 			return;
 		}
 
+		$this->countGraphic(strlen($bitmap->data));
 		$magX = $command->is("XG") ? max(1, min(10, $command->int(1, 1))) : 1;
 		$magY = $command->is("XG") ? max(1, min(10, $command->int(2, $magX))) : 1;
 

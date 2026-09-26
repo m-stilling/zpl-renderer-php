@@ -26,12 +26,11 @@ class PngDecoder {
 			throw new UnsupportedException("Decoding PNG graphics requires the GD extension.");
 		}
 
-		$size = Silencer::call(fn () => getimagesizefromstring($imageData))
-			?? throw new UnsupportedException("The graphic data is not an image GD can read.");
-		$bytes = intdiv($size[0] + 7, 8) * $size[1];
+		[$width, $height] = $this->dimensions($imageData);
+		$bytes = intdiv($width + 7, 8) * $height;
 
 		if ($bytes > $this->maxBytes) {
-			throw new ParseException("A {$size[0]} x {$size[1]} image needs {$bytes} bytes, more than the limit of {$this->maxBytes} bytes.");
+			throw new ParseException("A {$width} x {$height} image needs {$bytes} bytes, more than the limit of {$this->maxBytes} bytes.");
 		}
 
 		$image = Silencer::call(fn () => imagecreatefromstring($imageData))
@@ -60,5 +59,17 @@ class PngDecoder {
 		}
 
 		return new Bitmap($bytesPerRow, implode("", $rows));
+	}
+
+	/**
+	 * The width and height of an image, read from its header without decoding it.
+	 *
+	 * @return array{int, int}
+	 */
+	public function dimensions(string $imageData): array {
+		$size = Silencer::call(fn () => getimagesizefromstring($imageData))
+			?? throw new UnsupportedException("The graphic data is not an image GD can read.");
+
+		return [$size[0], $size[1]];
 	}
 }

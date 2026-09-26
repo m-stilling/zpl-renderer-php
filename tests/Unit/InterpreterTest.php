@@ -357,6 +357,28 @@ test("~DY stores a binary PNG by the byte count that ^XG recalls", function () {
 	expectBitmapMatches(element($zpl, ImageElement::class), $image);
 });
 
+test("graphics that add up to more than maxTotalGraphicBytes are rejected", function () {
+	$zpl = "~DGR:A.GRF,10,1,00~DGR:B.GRF,10,1,00^XA^FO0,0^GFA,10,10,1,00^FS^XZ";
+
+	expect(ZplRenderer::parse($zpl, new Options(maxTotalGraphicBytes: 30)))->toHaveCount(1)
+		->and(fn () => ZplRenderer::parse($zpl, new Options(maxTotalGraphicBytes: 29)))->toThrow(ParseException::class, "limit of 29 bytes in total");
+});
+
+test("every ^XG and ^IM counts the graphic it places against maxTotalGraphicBytes", function () {
+	$zpl = "~DGR:A.GRF,10,1,00^XA^FO0,0^XGR:A.GRF^FS^FO0,0^IMR:A.GRF^FS^XZ";
+
+	expect(label($zpl, new Options(maxTotalGraphicBytes: 30))->elements)->toHaveCount(2)
+		->and(fn () => ZplRenderer::parse($zpl, new Options(maxTotalGraphicBytes: 29)))->toThrow(ParseException::class);
+});
+
+test("a ~DY PNG counts four bytes per pixel against maxTotalGraphicBytes", function () {
+	$png = pngBytes(imagecreatetruecolor(16, 2));
+	$zpl = "~DYR:LOGO.PNG,B,P," . strlen($png) . ",," . $png . "^XA^XZ";
+
+	expect(ZplRenderer::parse($zpl, new Options(maxTotalGraphicBytes: 128)))->toHaveCount(1)
+		->and(fn () => ZplRenderer::parse($zpl, new Options(maxTotalGraphicBytes: 127)))->toThrow(ParseException::class);
+});
+
 test("~DY stores binary GRF rows by the byte count", function () {
 	$image = element("~DYR:BOX.GRF,B,G,3,1,\xFF\x5E\xFF^XA^FO0,0^XGR:BOX.GRF^FS^XZ", ImageElement::class);
 

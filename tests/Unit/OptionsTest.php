@@ -58,5 +58,6 @@ test("setters reject invalid values", function (callable $call, string $message)
 	[fn () => (new Options())->maxLabelDots(0), "maxLabelDots must be at least 1"],
 	[fn () => (new Options())->pixelsPerDot(9), "pixelsPerDot must be between 1 and 8"],
 	[fn () => (new Options())->maxPngPixels(0), "maxPngPixels must be at least 1"],
+	[fn () => (new Options())->maxTotalGraphicBytes(0), "maxTotalGraphicBytes must be at least 1"],
 	[fn () => new Options(dpmm: 7), "dpmm must be 6, 8, 12 or 24"],
 ]);

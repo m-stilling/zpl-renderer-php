@@ -95,7 +95,7 @@ Every exception the package throws implements `Stilling\ZplRenderer\Exceptions\Z
 
 | Exception | Thrown when |
 | --- | --- |
-| `ParseException` | The ZPL is malformed or goes past a limit: an invalid command name, invalid `^GF` data, a graphic larger than `maxGraphicBytes`, or too many stored commands from `^XF`. |
+| `ParseException` | The ZPL is malformed or goes past a limit: an invalid command name, invalid `^GF` data, graphics larger than `maxGraphicBytes` or `maxTotalGraphicBytes`, or too many stored commands from `^XF`. |
 | `UnsupportedException` | The input uses a feature the package does not render, or the `gd` extension is missing for PNG output. |
 | `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, a PNG larger than `maxPngPixels`, or a label index that does not exist. |
 
@@ -127,6 +127,7 @@ $sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
 | `honorQuantity` | `true` | Repeat a PDF page as many times as `^PQ` asks for. |
 | `maxPages` | `1000` | Upper bound on pages per PDF. |
 | `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF`, `~DG` or `~DY` graphic, decoded. A larger graphic throws a `ParseException`. |
+| `maxTotalGraphicBytes` | `67108864` | Upper bound on the bytes of all graphics in one call. Every `^GF`, `~DG` and `~DY` graphic counts when it is decoded, and every `^XG` and `^IM` counts the graphic it places. A `~DY` PNG counts 4 bytes per pixel. More throw a `ParseException`. |
 | `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |
 | `pixelsPerDot` | `1` | Pixels per printer dot in PNG output, 1 to 8. |
 | `maxPngPixels` | `67108864` | Upper bound on the pixels of one PNG image, width times height. A larger image throws a `RenderException`. The renderer uses about 5 bytes of memory per pixel. |
