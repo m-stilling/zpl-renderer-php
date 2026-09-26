@@ -16,6 +16,12 @@ test("a matrix applies, scales and bounds", function () {
 		->and($matrix->bounds(0, 0, 4, 2))->toBe([16.0, 40.0, 20.0, 48.0]);
 });
 
+test("the inverse of a matrix maps a point back", function () {
+	$matrix = (new Matrix(0, 1, -1, 0, 10, 20))->scaled(2);
+
+	expect($matrix->inverse()->apply(20, 46))->toBe([3.0, 0.0]);
+});
+
 test("^FO places the rotated box with its top-left at the origin", function () {
 	$box = fn (Orientation $o) => new BoxElement(100, 200, 40, 10, 1, orientation: $o);
 

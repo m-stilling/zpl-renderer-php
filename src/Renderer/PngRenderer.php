@@ -36,11 +36,20 @@ class PngRenderer {
 	/** Layer color that erases to white. Black ink with partial coverage is a gray between BLACK and this. */
 	private const int WHITE = 0xFFFFFF;
 
-	/** Most glyph rasters kept for reuse. */
-	private const int GLYPH_CACHE_SIZE = 4096;
+	/** 8192 x 8192, enough for the default label size at 8 pixels per dot. */
+	public const int DEFAULT_MAX_PIXELS = 67108864;
 
-	/** @var array<string, list<array{int, int, float}>> glyph rasters by font file, character and scale */
+	/** Most glyph pixels kept for reuse, summed over the kept rasters. */
+	private const int GLYPH_CACHE_PIXELS = 1048576;
+
+	/** Pixels that a field is drawn beyond the image edge, so that rounding in its placement cannot leave a gap. */
+	private const int CLIP_MARGIN = 2;
+
+	/** @var array<string, list<array{int, int, list<float>}>> glyph rasters by font file, character and scale */
 	private static array $glyphs = [];
+
+	/** The pixels that the glyph rasters in the cache can cover. */
+	private static int $glyphPixels = 0;
 
 	private int $scale = 1;
 
@@ -74,6 +83,12 @@ class PngRenderer {
 		$this->scale = $this->options->getPixelsPerDot();
 		$this->width = $label->width * $this->scale;
 		$this->height = $label->height * $this->scale;
+		$maxPixels = $this->options->getMaxPngPixels();
+
+		if ($this->width * $this->height > $maxPixels) {
+			throw new RenderException("A {$this->width} x {$this->height} image has more pixels than the limit of {$maxPixels}.");
+		}
+
 		$canvas = $this->canvas($this->width, $this->height);
 		$this->layer = $this->layer($this->width, $this->height);
 
@@ -216,7 +231,8 @@ class PngRenderer {
 	 * Draw a line glyph by glyph at the positions the metrics give, the same
 	 * positions the PDF uses. Every glyph starts on a whole pixel and the
 	 * capital letters are a whole number of pixels tall, so the same
-	 * character looks the same wherever it appears.
+	 * character looks the same wherever it appears. Only the part of a glyph
+	 * that lands on the image is measured.
 	 */
 	private function textLine(\GdImage $layer, Matrix $matrix, Orientation $orientation, ResolvedFont $font, string $winAnsi, float $x, float $baseline, float $wordSpacing): void {
 		$capHeight = $font->capHeight() * $this->scale;
@@ -225,34 +241,62 @@ class PngRenderer {
 		$scaleX = $scaleY * $font->horizontalScale;
 		$file = $font->typeface->file($this->options);
 		$origin = (int) floor($x * $this->scale);
+		[$minX, $minY, $maxX, $maxY] = $matrix->inverse()->bounds(0, 0, $this->width, $this->height);
+		$clipTop = (int) floor(($minY - $baseline) * $this->scale) - self::CLIP_MARGIN;
+		$clipBottom = (int) ceil(($maxY - $baseline) * $this->scale) + self::CLIP_MARGIN;
+		$clipLeft = (int) floor($minX * $this->scale) - $origin - self::CLIP_MARGIN;
+		$clipRight = (int) ceil($maxX * $this->scale) - $origin + self::CLIP_MARGIN;
 		$pen = $x;
-		$pixels = [];
+		$glyphs = [];
 
 		foreach (unpack("C*", $winAnsi) ?: [] as $code) {
 			if ($code !== 32) {
 				$column = (int) round($pen * $this->scale) - $origin;
+				$rows = $this->glyphCoverage($font, $file, $code, $scaleX, $scaleY, [$clipTop, $clipBottom, $clipLeft - $column, $clipRight - $column]);
 
-				foreach ($this->glyphCoverage($font, $file, $code, $scaleX, $scaleY) as [$row, $col, $coverage]) {
-					$pixels[] = [$row, $col + $column, $coverage];
+				if ($rows !== []) {
+					$glyphs[] = [$column, $rows];
 				}
 			}
 
 			$pen += $font->width(chr($code)) + ($code === 32 ? $wordSpacing : 0);
 		}
 
-		if ($pixels === []) {
+		if ($glyphs === []) {
 			return;
 		}
 
-		$top = min(array_column($pixels, 0));
-		$left = min(array_column($pixels, 1));
-		$image = $this->layer(max(array_column($pixels, 1)) - $left + 1, max(array_column($pixels, 0)) - $top + 1);
+		$top = PHP_INT_MAX;
+		$bottom = PHP_INT_MIN;
+		$left = PHP_INT_MAX;
+		$right = PHP_INT_MIN;
 
-		foreach ($pixels as [$row, $col, $coverage]) {
-			$color = $this->ink($coverage, imagecolorat($image, $col - $left, $row - $top));
+		foreach ($glyphs as [$column, $rows]) {
+			$top = min($top, $rows[0][0]);
+			$bottom = max($bottom, $rows[count($rows) - 1][0]);
 
-			if ($color !== null) {
-				imagesetpixel($image, $col - $left, $row - $top, $color);
+			foreach ($rows as [, $first, $values]) {
+				$left = min($left, $column + $first);
+				$right = max($right, $column + $first + count($values) - 1);
+			}
+		}
+
+		$image = $this->layer($right - $left + 1, $bottom - $top + 1);
+
+		foreach ($glyphs as [$column, $rows]) {
+			foreach ($rows as [$row, $first, $values]) {
+				foreach ($values as $offset => $coverage) {
+					if ($coverage <= 0.0) {
+						continue;
+					}
+
+					$px = $column + $first + $offset - $left;
+					$color = $this->ink($coverage, imagecolorat($image, $px, $row - $top));
+
+					if ($color !== null) {
+						imagesetpixel($image, $px, $row - $top, $color);
+					}
+				}
 			}
 		}
 
@@ -279,16 +323,39 @@ class PngRenderer {
 	}
 
 	/**
-	 * @return list<array{int, int, float}>
+	 * The coverage rows of a glyph inside the clip. A glyph that lies inside
+	 * the clip whole is kept for reuse.
+	 *
+	 * @param array{int, int, int, int} $clip top row, bottom row, left column and right column relative to the glyph origin, the bottom and right excluded
+	 * @return list<array{int, int, list<float>}>
 	 */
-	private function glyphCoverage(ResolvedFont $font, string $file, int $code, float $scaleX, float $scaleY): array {
-		$key = sprintf("%s|%d|%.4F|%.4F", $file, $code, $scaleX, $scaleY);
+	private function glyphCoverage(ResolvedFont $font, string $file, int $code, float $scaleX, float $scaleY, array $clip): array {
+		$outline = $font->face->outline($code);
+		$extent = GlyphRaster::extent($outline, $scaleX, $scaleY);
 
-		if (count(self::$glyphs) >= self::GLYPH_CACHE_SIZE) {
-			self::$glyphs = [];
+		if ($extent === null || $extent[1] <= $clip[0] || $extent[0] >= $clip[1] || $extent[3] <= $clip[2] || $extent[2] >= $clip[3]) {
+			return [];
 		}
 
-		return self::$glyphs[$key] ??= GlyphRaster::coverage($font->face->outline($code), $scaleX, $scaleY);
+		$pixels = ($extent[1] - $extent[0]) * ($extent[3] - $extent[2]);
+
+		if ($extent[0] < $clip[0] || $extent[1] > $clip[1] || $extent[2] < $clip[2] || $extent[3] > $clip[3] || $pixels > self::GLYPH_CACHE_PIXELS) {
+			return GlyphRaster::coverage($outline, $scaleX, $scaleY, $clip);
+		}
+
+		$key = sprintf("%s|%d|%.4F|%.4F", $file, $code, $scaleX, $scaleY);
+
+		if (!isset(self::$glyphs[$key])) {
+			if (self::$glyphPixels + $pixels > self::GLYPH_CACHE_PIXELS) {
+				self::$glyphs = [];
+				self::$glyphPixels = 0;
+			}
+
+			self::$glyphs[$key] = GlyphRaster::coverage($outline, $scaleX, $scaleY);
+			self::$glyphPixels += $pixels;
+		}
+
+		return self::$glyphs[$key];
 	}
 
 	/**
@@ -380,22 +447,39 @@ class PngRenderer {
 		$this->mark($x0, $y0, $x1 + 1, $y1 + 1);
 	}
 
+	/**
+	 * Draw the dots of the bitmap that land on the image, and only those.
+	 */
 	private function image(\GdImage $layer, ImageElement $element): void {
-		$width = $element->width();
-		$height = $element->height();
-		$matrix = Placement::matrix($element, $width, $height, 0)->scaled($this->scale);
-		$bitmap = $this->bitmapImage($element->bitmap);
-		$scaled = $this->layer((int) ($width * $this->scale), (int) ($height * $this->scale));
-		imagecopyresized($scaled, $bitmap, 0, 0, 0, 0, imagesx($scaled), imagesy($scaled), imagesx($bitmap), imagesy($bitmap));
-		$this->place($layer, $scaled, $matrix, $element->orientation, 0, 0);
+		$bitmap = $element->bitmap;
+		$magnificationX = $element->magnificationX;
+		$magnificationY = $element->magnificationY;
+		$matrix = Placement::matrix($element, $element->width(), $element->height(), 0)->scaled($this->scale);
+		[$minX, $minY, $maxX, $maxY] = $matrix->inverse()->bounds(0, 0, $this->width, $this->height);
+		$x0 = max(0, (int) floor($minX / $magnificationX) - 1);
+		$y0 = max(0, (int) floor($minY / $magnificationY) - 1);
+		$x1 = min($bitmap->width, (int) ceil($maxX / $magnificationX) + 1);
+		$y1 = min($bitmap->height, (int) ceil($maxY / $magnificationY) + 1);
+
+		if ($x1 <= $x0 || $y1 <= $y0) {
+			return;
+		}
+
+		$source = $this->bitmapImage($bitmap, $x0, $y0, $x1 - $x0, $y1 - $y0);
+		$scaled = $this->layer(($x1 - $x0) * $magnificationX * $this->scale, ($y1 - $y0) * $magnificationY * $this->scale);
+		imagecopyresized($scaled, $source, 0, 0, 0, 0, imagesx($scaled), imagesy($scaled), imagesx($source), imagesy($source));
+		$this->place($layer, $scaled, $matrix, $element->orientation, $x0 * $magnificationX, $y0 * $magnificationY);
 	}
 
-	private function bitmapImage(Bitmap $bitmap): \GdImage {
-		$image = $this->layer($bitmap->width, $bitmap->height);
+	/**
+	 * The part of a bitmap from column x0 and row y0 on, as a layer-compatible image.
+	 */
+	private function bitmapImage(Bitmap $bitmap, int $x0, int $y0, int $width, int $height): \GdImage {
+		$image = $this->layer($width, $height);
 
-		for ($y = 0; $y < $bitmap->height; $y++) {
-			for ($x = 0; $x < $bitmap->width; $x++) {
-				if ($bitmap->pixel($x, $y)) {
+		for ($y = 0; $y < $height; $y++) {
+			for ($x = 0; $x < $width; $x++) {
+				if ($bitmap->pixel($x0 + $x, $y0 + $y)) {
 					imagesetpixel($image, $x, $y, self::BLACK);
 				}
 			}

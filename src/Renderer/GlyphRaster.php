@@ -14,16 +14,50 @@ class GlyphRaster {
 	private const float FLATNESS = 1.5;
 
 	/**
+	 * The pixels a glyph can cover, relative to the glyph origin on the
+	 * baseline: top row, bottom row, left column and right column, the bottom
+	 * and right excluded. Null for a blank glyph. The control points of a
+	 * curve enclose the curve, so the box of all points encloses the outline.
+	 *
+	 * @param list<list<array{float, float, bool}>> $contours outline in em, y up
+	 * @return array{int, int, int, int}|null
+	 */
+	public static function extent(array $contours, float $scaleX, float $scaleY): ?array {
+		$minX = INF;
+		$minY = INF;
+		$maxX = -INF;
+		$maxY = -INF;
+
+		foreach ($contours as $contour) {
+			foreach ($contour as [$x, $y]) {
+				$minX = min($minX, $x * $scaleX);
+				$maxX = max($maxX, $x * $scaleX);
+				$minY = min($minY, -$y * $scaleY);
+				$maxY = max($maxY, -$y * $scaleY);
+			}
+		}
+
+		if ($minX === INF) {
+			return null;
+		}
+
+		return [(int) floor($minY), (int) ceil($maxY), (int) floor($minX), (int) ceil($maxX)];
+	}
+
+	/**
 	 * How much of each pixel a glyph covers, relative to the glyph origin on
-	 * the baseline: row (negative above the baseline), column, and the covered
-	 * fraction of the pixel, greater than zero.
+	 * the baseline, row by row: the row (negative above the baseline), the
+	 * first covered column, and the covered fraction of each pixel from that
+	 * column to the last covered one, 0 for a pixel in between that the glyph
+	 * does not cover.
 	 *
 	 * @param list<list<array{float, float, bool}>> $contours outline in em, y up
 	 * @param float $scaleX pixels per em horizontally
 	 * @param float $scaleY pixels per em vertically
-	 * @return list<array{int, int, float}>
+	 * @param array{int, int, int, int}|null $clip the only pixels to measure: top row, bottom row, left column and right column, the bottom and right excluded
+	 * @return list<array{int, int, list<float>}>
 	 */
-	public static function coverage(array $contours, float $scaleX, float $scaleY): array {
+	public static function coverage(array $contours, float $scaleX, float $scaleY, ?array $clip = null): array {
 		$edges = [];
 
 		foreach ($contours as $contour) {
@@ -47,7 +81,16 @@ class GlyphRaster {
 
 		$top = (int) floor(min(array_column($edges, 1)));
 		$bottom = (int) ceil(max(array_column($edges, 3)));
-		$pixels = [];
+		$left = -INF;
+		$right = INF;
+
+		if ($clip !== null) {
+			[$clipTop, $clipBottom, $left, $right] = $clip;
+			$top = max($top, $clipTop);
+			$bottom = min($bottom, $clipBottom);
+		}
+
+		$rows = [];
 
 		for ($row = $top; $row < $bottom; $row++) {
 			/** @var array<int, float> $coverage */
@@ -57,6 +100,9 @@ class GlyphRaster {
 				$y = $row + ($sub + 0.5) / self::SUBROWS;
 
 				foreach (self::spans($edges, $y) as [$from, $to]) {
+					$from = max($from, $left);
+					$to = min($to, $right);
+
 					for ($column = (int) floor($from); $column < $to; $column++) {
 						$overlap = min($to, $column + 1) - max($from, $column);
 						$coverage[$column] = ($coverage[$column] ?? 0.0) + $overlap / self::SUBROWS;
@@ -65,15 +111,25 @@ class GlyphRaster {
 			}
 
 			ksort($coverage);
+			$first = null;
+			$values = [];
 
 			foreach ($coverage as $column => $amount) {
-				if ($amount > 0.001) {
-					$pixels[] = [$row, $column, min(1.0, $amount)];
+				if ($amount <= 0.001) {
+					continue;
 				}
+
+				$first ??= $column;
+				$values = array_pad($values, $column - $first, 0.0);
+				$values[] = min(1.0, $amount);
+			}
+
+			if ($first !== null) {
+				$rows[] = [$row, $first, $values];
 			}
 		}
 
-		return $pixels;
+		return $rows;
 	}
 
 	/**

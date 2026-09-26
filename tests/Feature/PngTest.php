@@ -174,6 +174,34 @@ test("images are drawn dot for dot and magnified", function () {
 		->and(blackPixels($magnified, 10, 10, 34, 12))->toBe(24);
 });
 
+test("an image that starts off the label draws the dots that land on it", function () {
+	$outside = png("^XA^PW100^LL100^FO-12,-2^GFA,4,4,1,FF00FF00^FS^XZ");
+	$partly = png("^XA^PW100^LL100^FO-4,-2^GFA,4,4,1,FF00FF00^FS^XZ");
+	$magnified = png("~DGR:A.GRF,2,1,F0F0^XA^PW100^LL100^FO-4,40^XGR:A.GRF,2,3^FS^XZ");
+
+	expect(blackPixels($outside, 0, 0, 100, 100))->toBe(0)
+		->and(blackPixels($partly, 0, 0, 100, 100))->toBe(4)
+		->and(blackPixels($magnified, 0, 0, 100, 100))->toBe(4 * 6);
+});
+
+test("an 8 MiB bitmap draws only the dots on the label", function () {
+	$image = png("^XA^PW100^LL100^FO0,0^GFA,8388608,8388608,1,FF^FS^XZ");
+
+	expect(blackPixels($image, 0, 0, 100, 100))->toBe(8);
+});
+
+test("a glyph far larger than the label draws the part that lands on it", function () {
+	$image = png("^XA^PW800^LL100^FO-1500,0^A0N,100000,100000^FDW^FS^XZ");
+
+	expect(blackPixels($image, 0, 0, 800, 100))->toBeGreaterThan(0);
+});
+
+test("an image with more pixels than maxPngPixels is rejected", function () {
+	expect(fn () => ZplRenderer::toPng("^XA^PW32000^LL32000^XZ"))->toThrow(RenderException::class, "limit of 67108864")
+		->and(fn () => ZplRenderer::toPng("^XA^PW100^LL50^XZ", new Options(pixelsPerDot: 2, maxPngPixels: 19999)))->toThrow(RenderException::class)
+		->and(imagesx(png("^XA^PW100^LL50^XZ", new Options(pixelsPerDot: 2, maxPngPixels: 20000))))->toBe(200);
+});
+
 test("^POI and ^PMY flip the image", function () {
 	$inverted = png("^XA^PW100^LL50^POI^FO0,0^GB10,10,10^FS^XZ");
 	$mirrored = png("^XA^PW100^LL50^PMY^FO0,0^GB10,10,10^FS^XZ");

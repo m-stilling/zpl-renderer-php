@@ -38,6 +38,22 @@ class Matrix {
 	}
 
 	/**
+	 * The transform that undoes this one.
+	 */
+	public function inverse(): self {
+		$determinant = $this->a * $this->d - $this->b * $this->c;
+
+		return new self(
+			$this->d / $determinant,
+			-$this->b / $determinant,
+			-$this->c / $determinant,
+			$this->a / $determinant,
+			($this->c * $this->f - $this->d * $this->e) / $determinant,
+			($this->b * $this->e - $this->a * $this->f) / $determinant,
+		);
+	}
+
+	/**
 	 * The axis-aligned bounding box of a rectangle after the transform.
 	 *
 	 * @return array{float, float, float, float} min x, min y, max x, max y

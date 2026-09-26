@@ -97,7 +97,7 @@ Every exception the package throws implements `Stilling\ZplRenderer\Exceptions\Z
 | --- | --- |
 | `ParseException` | The ZPL is malformed or goes past a limit: an invalid command name, invalid `^GF` data, a graphic larger than `maxGraphicBytes`, or too many stored commands from `^XF`. |
 | `UnsupportedException` | The input uses a feature the package does not render, or the `gd` extension is missing for PNG output. |
-| `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, or a label index that does not exist. |
+| `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, a PNG larger than `maxPngPixels`, or a label index that does not exist. |
 
 Invalid `Options` values throw `InvalidArgumentException` from the setter or the constructor.
 
@@ -129,6 +129,7 @@ $sharp = $base->pixelsPerDot(4);   // $base still has pixelsPerDot 1
 | `maxGraphicBytes` | `8388608` | Upper bound on the size in bytes of one `^GF`, `~DG` or `~DY` graphic, decoded. A larger graphic throws a `ParseException`. |
 | `scalableFontCondense` | `0.887` | Horizontal scale of font 0 relative to the natural width of `scalableFontFile`. |
 | `pixelsPerDot` | `1` | Pixels per printer dot in PNG output, 1 to 8. |
+| `maxPngPixels` | `67108864` | Upper bound on the pixels of one PNG image, width times height. A larger image throws a `RenderException`. The renderer uses about 5 bytes of memory per pixel. |
 | `antialias` | `true` | Smooth text edges in PNG output with gray pixels. `false` gives black and white only, like the printer. |
 | `scalableFontFile` | Roboto Condensed Bold | TrueType file drawn for font 0. |
 | `monoFontFile` | Roboto Mono | TrueType file drawn for fonts A and C to H. |

@@ -3,6 +3,7 @@
 namespace Stilling\ZplRenderer;
 
 use Stilling\ZplRenderer\Graphics\GraphicDecoder;
+use Stilling\ZplRenderer\Renderer\PngRenderer;
 
 /**
  * Printer and label settings that the ZPL itself does not carry.
@@ -32,6 +33,7 @@ class Options {
 	private string $scalableFontFile;
 	private string $monoFontFile;
 	private string $monoBoldFontFile;
+	private int $maxPngPixels;
 
 	final public function __construct(
 		int $dpmm = 8,
@@ -48,6 +50,7 @@ class Options {
 		string $scalableFontFile = self::FONT_DIRECTORY . "/RobotoCondensed-Bold.ttf",
 		string $monoFontFile = self::FONT_DIRECTORY . "/RobotoMono-Regular.ttf",
 		string $monoBoldFontFile = self::FONT_DIRECTORY . "/RobotoMono-Bold.ttf",
+		int $maxPngPixels = PngRenderer::DEFAULT_MAX_PIXELS,
 	) {
 		// Nothing else holds the instance yet, so the setters fill it in place.
 		$immutable = $this->immutable;
@@ -66,7 +69,8 @@ class Options {
 			->antialias($antialias)
 			->scalableFontFile($scalableFontFile)
 			->monoFontFile($monoFontFile)
-			->monoBoldFontFile($monoBoldFontFile);
+			->monoBoldFontFile($monoBoldFontFile)
+			->maxPngPixels($maxPngPixels);
 
 		$this->immutable = $immutable;
 	}
@@ -224,6 +228,22 @@ class Options {
 
 	public function getPixelsPerDot(): int {
 		return $this->pixelsPerDot;
+	}
+
+	/** Upper bound on the pixels of one PNG image, width times height, so that ^PW and ^LL cannot exhaust memory. */
+	public function maxPngPixels(int $maxPngPixels): static {
+		if ($maxPngPixels < 1) {
+			throw new \InvalidArgumentException("maxPngPixels must be at least 1.");
+		}
+
+		$options = $this->target();
+		$options->maxPngPixels = $maxPngPixels;
+
+		return $options;
+	}
+
+	public function getMaxPngPixels(): int {
+		return $this->maxPngPixels;
 	}
 
 	/** Smooth text edges in PNG output with gray pixels. When false, every pixel is black or white, like the printer prints it. */
