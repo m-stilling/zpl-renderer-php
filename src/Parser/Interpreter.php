@@ -52,6 +52,12 @@ class Interpreter {
 	/** How deep ^XF recalls nest before a further ^XF is ignored. */
 	private const int MAX_RECALL_DEPTH = 8;
 
+	/** How many stored commands the ^XF recalls of one format may apply before a ParseException. */
+	private const int MAX_RECALLED_COMMANDS = 100000;
+
+	/** Stored commands applied by ^XF recalls in the current format. */
+	private int $recalledCommands = 0;
+
 	/** @var array<string, list<Command>> formats stored with ^DF */
 	private array $storedFormats = [];
 
@@ -223,6 +229,7 @@ class Interpreter {
 		$this->field = new FieldState();
 		$this->fieldValues = [];
 		$this->recalling = false;
+		$this->recalledCommands = 0;
 	}
 
 	/**
@@ -598,7 +605,9 @@ class Interpreter {
 	/**
 	 * A format that is already being recalled, directly or through other
 	 * formats, is not recalled again, and recalls do not nest deeper than
-	 * MAX_RECALL_DEPTH. Both would otherwise loop forever or grow exponentially.
+	 * MAX_RECALL_DEPTH. Formats that each recall the next one many times still
+	 * multiply, so the recalls of one format apply at most MAX_RECALLED_COMMANDS
+	 * stored commands.
 	 */
 	private function recallFormat(Command $command): void {
 		$name = GraphicStore::normalize($command->arg(0));
@@ -615,9 +624,15 @@ class Interpreter {
 
 		try {
 			foreach ($stored as $storedCommand) {
-				if (!$storedCommand->is("DF")) {
-					$this->apply($storedCommand);
+				if ($storedCommand->is("DF")) {
+					continue;
 				}
+
+				if (++$this->recalledCommands > self::MAX_RECALLED_COMMANDS) {
+					throw new ParseException("The ^XF recalls of one format apply more than " . self::MAX_RECALLED_COMMANDS . " stored commands.");
+				}
+
+				$this->apply($storedCommand);
 			}
 		} finally {
 			unset($this->openRecalls[$name]);

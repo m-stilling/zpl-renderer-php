@@ -95,7 +95,7 @@ Every exception the package throws implements `Stilling\ZplRenderer\Exceptions\Z
 
 | Exception | Thrown when |
 | --- | --- |
-| `ParseException` | The ZPL is malformed: an invalid command name, or invalid `^GF` data. |
+| `ParseException` | The ZPL is malformed or goes past a limit: an invalid command name, invalid `^GF` data, a graphic larger than `maxGraphicBytes`, or too many stored commands from `^XF`. |
 | `UnsupportedException` | The input uses a feature the package does not render, or the `gd` extension is missing for PNG output. |
 | `RenderException` | A label cannot be drawn: invalid barcode data, an unreadable font file, or a label index that does not exist. |
 
@@ -167,7 +167,7 @@ Without an output path the file is written next to the input with the new extens
 | | `^FW` Field orientation | `^XG` Recall graphic | |
 | | | `^IM` Image move | |
 
-`^DF` stores a format. `^XF` recalls it and fills the `^FN` fields from the recalling format.
+`^DF` stores a format. `^XF` recalls it and fills the `^FN` fields from the recalling format. The recalls of one format apply at most 100000 stored commands. More throw a `ParseException`.
 
 `^PW`, `^LL`, `^LH`, `^LS`, `^LT`, `^LR`, `^PO`, `^PM`, `^CF`, `^FW`, `^BY` and `^CI` are printer settings. They stay in effect for the labels that follow, until a command changes them. `^PQ` applies to its own label only. A `^LL` after the first `^FS` of a label sets the length of the labels after it, not of its own label. `^LR` reverses the fields after it, until `^LRN`. A field with `^FR` under `^LR` also prints reversed.
 

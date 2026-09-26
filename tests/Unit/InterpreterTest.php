@@ -313,6 +313,27 @@ test("stored formats that recall each other are each recalled once", function ()
 		->and(label($zpl)->elements)->toHaveCount(2);
 });
 
+/**
+ * Eight stored formats, each recalling the next one $fanOut times, and a label that recalls the first.
+ */
+function recallChain(int $fanOut): string {
+	$zpl = "";
+
+	for ($i = 1; $i <= 7; $i++) {
+		$zpl .= "^XA^DFR:F{$i}.ZPL^FS" . str_repeat("^XFR:F" . ($i + 1) . ".ZPL", $fanOut) . "^XZ";
+	}
+
+	return $zpl . "^XA^DFR:F8.ZPL^FS^FO0,0^GB10,10,1^FS^XZ^XA^XFR:F1.ZPL^XZ";
+}
+
+test("stored formats that recall the next one several times apply every recall", function () {
+	expect(label(recallChain(2))->elements)->toHaveCount(128);
+});
+
+test("recalls that apply more than 100000 stored commands in one format are rejected", function () {
+	ZplRenderer::parse(recallChain(10));
+})->throws(ParseException::class, "more than 100000 stored commands");
+
 test("~DY object data larger than maxGraphicBytes is rejected before it is decoded", function (string $data) {
 	ZplRenderer::parse("~DYR:LOGO,B,P,0,0,{$data}^XA^XZ", new Options(maxGraphicBytes: 16));
 })->with([
