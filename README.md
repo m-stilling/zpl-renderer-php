@@ -1,8 +1,8 @@
-# ZPL Renderer
+# ZPL Renderer for PHP
 
 [![tests](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/zpl-renderer-php/actions/workflows/tests.yml) [![Packagist Version](https://img.shields.io/packagist/v/stilling/zpl-renderer)](https://packagist.org/packages/stilling/zpl-renderer)
 
-Parse ZPL label code and render it to vector PDF, to SVG or to PNG, without a printer and without an online service. One `^XA ... ^XZ` format becomes one PDF page, one SVG image or one PNG image. In the PDF and the SVG, bars, boxes and barcodes stay vector shapes, so the output is sharp at every zoom level. In the PDF, text stays text. In the SVG, text is drawn as glyph outlines, so the image needs no font.
+Convert Zebra ZPL label code to vector PDF, to SVG or to PNG in PHP, without a printer and without an online service. One `^XA ... ^XZ` format becomes one PDF page, one SVG image or one PNG image. In the PDF and the SVG, bars, boxes and barcodes stay vector shapes, so the output is sharp at every zoom level. In the PDF, text stays text. In the SVG, text is drawn as glyph outlines, so the image needs no font.
 
 ```
 composer require stilling/zpl-renderer
